@@ -1,0 +1,439 @@
+{
+  "bundle_id": "ACME-REDWOOD-2027-ACTIVATION",
+  "bundle_title": "Acme Cloud and Redwood Systems Contract Bundle",
+  "documents": [
+    {
+      "filename": "acme-cloud-redwood-order-form.pdf",
+      "document_id": "OF-REDWOOD-2027-001",
+      "document_type": "order_form",
+      "title": "Enterprise Subscription Order Form",
+      "subtitle": "Acme Cloud and Redwood Systems",
+      "version": "1.0",
+      "effective_date": "January 1, 2027",
+      "execution_date": "December 15, 2026",
+      "intro": "This Order Form is entered into under the Master Services Agreement between Acme Cloud, Inc. and Redwood Systems, Inc. The incorporated documents together form the Agreement for the subscription described below.",
+      "sections": [
+        {
+          "id": "OF-1",
+          "title": "Customer and subscription term",
+          "paragraphs": [
+            "Customer: Redwood Systems, Inc. Provider: Acme Cloud, Inc.",
+            "The subscription begins on January 1, 2027 and continues through December 31, 2027, unless earlier terminated in accordance with the Agreement. The initial subscription term is one year."
+          ]
+        },
+        {
+          "id": "OF-2",
+          "title": "Products and fixed charges",
+          "table": {
+            "headers": ["Product", "Quantity", "Unit price", "Gross charge"],
+            "rows": [
+              ["Enterprise platform subscription", "1 annual subscription", "USD 96,000 per year", "USD 96,000"],
+              ["Named user seats", "300 seats", "USD 240 per seat per year", "USD 72,000"],
+              ["Advanced analytics add-on", "1 annual add-on", "USD 24,000 per year", "USD 24,000"],
+              ["Gross annual fixed charges", "", "", "USD 192,000"],
+              ["Negotiated fixed-charge discount", "15%", "", "USD (28,800)"],
+              ["Net annual fixed charges", "", "", "USD 163,200"]
+            ],
+            "widths": [0.39, 0.2, 0.23, 0.18]
+          },
+          "paragraphs": [
+            "The 15% discount applies only to the annual fixed charges shown above. It does not reduce usage overage charges, onboarding fees, taxes, or any separately ordered services."
+          ]
+        },
+        {
+          "id": "OF-3",
+          "title": "Billing and payment",
+          "paragraphs": [
+            "Acme Cloud will invoice the net annual fixed charges of USD 163,200 on January 1, 2027. Payment is due within 30 days after the invoice date.",
+            "The subscription includes 20 TB monthly data processing capacity. Usage above the applicable included capacity is charged at USD 450 per TB and invoiced monthly in arrears. Partial TB usage is measured to the nearest 0.01 TB."
+          ]
+        },
+        {
+          "id": "OF-4",
+          "title": "Contracted entitlements",
+          "table": {
+            "headers": ["Entitlement", "Contracted value"],
+            "rows": [
+              ["Product edition", "Enterprise"],
+              ["Named users", "300"],
+              ["Advanced analytics", "Enabled"],
+              ["Production workspaces", "2"],
+              ["Sandbox workspaces", "1"],
+              ["Identity capabilities", "SSO and SCIM provisioning enabled"],
+              ["Monthly data processing capacity", "20 TB"]
+            ],
+            "widths": [0.44, 0.56]
+          },
+          "paragraphs": [
+            "These entitlements activate on January 1, 2027 and expire at the end of December 31, 2027 unless renewed or modified by a signed writing."
+          ]
+        },
+        {
+          "id": "OF-5",
+          "title": "Support selection and negotiated response commitment",
+          "paragraphs": [
+            "Redwood Systems receives the Premium Support tier for the subscription term. Priority 1 incidents receive 24-hour coverage, seven days per week, and an initial response within 30 minutes. Priority 2 incidents receive an initial response within two business hours.",
+            "Web and telephone support channels and the Priority 1 duty-manager escalation process are provided as described in the Premium Support Schedule. Service-credit eligibility remains governed by that schedule."
+          ]
+        },
+        {
+          "id": "OF-6",
+          "title": "Guided onboarding",
+          "paragraphs": [
+            "Acme Cloud will provide the guided enterprise onboarding services described in Statement of Work SOW-REDWOOD-2027-001. The onboarding fee is USD 12,000 and becomes invoiceable when the kickoff meeting is recorded as completed."
+          ]
+        },
+        {
+          "id": "OF-7",
+          "title": "Incorporated documents and precedence",
+          "paragraphs": [
+            "This Order Form incorporates the Master Services Agreement MSA-2026-01, Product Schedule PS-ENTERPRISE-2026-10, Premium Support Schedule SS-PREMIUM-2026-10, and Statement of Work SOW-REDWOOD-2027-001.",
+            "If a specific term of this Order Form conflicts with a corresponding standard term in an incorporated schedule, this Order Form controls for Redwood Systems, the quantities stated here, and this subscription term. The remainder of each incorporated document continues to apply."
+          ]
+        },
+        {
+          "id": "OF-8",
+          "title": "Authorization",
+          "paragraphs": [
+            "Each signatory represents that the signatory is authorized to bind the identified party. Electronic signatures and counterparts are effective as originals."
+          ],
+          "signatures": [
+            ["Acme Cloud, Inc.", "Alice Chen", "Vice President, Sales", "December 15, 2026"],
+            ["Redwood Systems, Inc.", "Morgan Lee", "Vice President, Information Technology", "December 15, 2026"]
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "acme-cloud-master-services-agreement.pdf",
+      "document_id": "MSA-2026-01",
+      "document_type": "master_services_agreement",
+      "title": "Master Services Agreement",
+      "subtitle": "Acme Cloud, Inc. and Redwood Systems, Inc.",
+      "version": "1.0",
+      "effective_date": "December 15, 2026",
+      "execution_date": "December 15, 2026",
+      "intro": "This Master Services Agreement governs access to Acme Cloud services purchased by Redwood Systems under an Order Form. Capitalized terms have the meanings stated in this Agreement or the applicable incorporated document.",
+      "sections": [
+        {
+          "id": "MSA-1",
+          "title": "Definitions",
+          "paragraphs": [
+            "Agreement means this Master Services Agreement together with each executed Order Form and each schedule or statement of work incorporated by reference.",
+            "Customer Data means information submitted to the services by or for Redwood Systems. Documentation means Acme Cloud's generally available technical and usage documentation. Order Form means an ordering document signed by both parties that identifies products, quantities, fees, and the subscription term."
+          ]
+        },
+        {
+          "id": "MSA-2",
+          "title": "Orders and access",
+          "paragraphs": [
+            "Acme Cloud will provide the services identified in an executed Order Form during the applicable subscription term. Redwood Systems may permit authorized users to access the services within the contracted quantities and will remain responsible for their use.",
+            "An affiliate may purchase services only by entering into its own Order Form unless the applicable Order Form expressly identifies that affiliate as an authorized recipient."
+          ]
+        },
+        {
+          "id": "MSA-3",
+          "title": "Fees, invoices, and taxes",
+          "paragraphs": [
+            "Redwood Systems will pay the fees specified in each Order Form. Unless an Order Form states otherwise, undisputed invoices are due 30 days after the invoice date. Usage-based charges may be invoiced after the period in which usage occurs.",
+            "Fees exclude sales, use, value-added, withholding, and similar taxes. Redwood Systems is responsible for applicable taxes other than taxes based on Acme Cloud's net income. The parties will cooperate regarding valid exemption documentation."
+          ]
+        },
+        {
+          "id": "MSA-4",
+          "title": "Customer responsibilities and acceptable use",
+          "paragraphs": [
+            "Redwood Systems is responsible for account administration, the accuracy and legality of Customer Data, and use of the services in accordance with the Documentation. Redwood Systems will not circumvent usage limits, interfere with service integrity, or provide service access to unauthorized third parties.",
+            "Acme Cloud may suspend access to address an immediate security threat or unlawful use, using reasonable efforts to provide notice and limit the suspension to the affected activity."
+          ]
+        },
+        {
+          "id": "MSA-5",
+          "title": "Confidentiality and security",
+          "paragraphs": [
+            "Each recipient will protect the other party's Confidential Information using at least reasonable care and will use it only to perform or exercise rights under the Agreement. Confidential Information excludes information independently developed, lawfully received without restriction, or publicly available without breach.",
+            "Acme Cloud will maintain reasonable administrative, technical, and organizational safeguards for Customer Data. Redwood Systems remains responsible for its identity provider, endpoint security, and authorization of its administrators."
+          ]
+        },
+        {
+          "id": "MSA-6",
+          "title": "Warranties and disclaimers",
+          "paragraphs": [
+            "Acme Cloud warrants that the services will materially conform to the Documentation during the subscription term and that professional services will be performed in a professional and workmanlike manner. The exclusive remedy for breach is reperformance or, if reperformance is not commercially reasonable, termination of the affected service and refund of prepaid unused fees.",
+            "Except for the express warranties in the Agreement, each party disclaims implied warranties to the maximum extent permitted by law."
+          ]
+        },
+        {
+          "id": "MSA-7",
+          "title": "Limitation of liability",
+          "paragraphs": [
+            "Neither party is liable for indirect, incidental, special, consequential, or punitive damages arising from the Agreement. Except for excluded claims, each party's aggregate liability will not exceed the fees paid or payable for the affected services during the 12 months preceding the event giving rise to liability.",
+            "The limitations do not apply to payment obligations, infringement or misappropriation of the other party's intellectual property, breach of confidentiality, or liability that cannot legally be limited."
+          ]
+        },
+        {
+          "id": "MSA-8",
+          "title": "Term and termination",
+          "paragraphs": [
+            "This Agreement begins on the effective date and continues while an Order Form remains in effect. Either party may terminate for a material breach that remains uncured 30 days after written notice, or immediately if the other party becomes subject to qualifying insolvency proceedings.",
+            "Termination of this Agreement terminates active Order Forms unless the parties agree otherwise. Accrued payment obligations and provisions intended by their nature to survive will survive termination."
+          ]
+        },
+        {
+          "id": "MSA-9",
+          "title": "Document relationship and order of precedence",
+          "paragraphs": [
+            "An executed Order Form may state negotiated terms for a specific purchase. If documents conflict, the more specific negotiated term in the Order Form controls for that purchase, followed by the applicable statement of work or schedule for its subject matter, and then this Master Services Agreement. A later document does not modify an earlier document unless it identifies the term being modified or the conflict cannot otherwise be reconciled.",
+            "Headings are for convenience and do not affect interpretation. References to a document include its properly incorporated attachments."
+          ]
+        },
+        {
+          "id": "MSA-10",
+          "title": "General terms and signatures",
+          "paragraphs": [
+            "Neither party may assign the Agreement without the other party's consent, except in connection with a merger, reorganization, or sale of substantially all relevant assets. Notices must be in writing. The Agreement is governed by the laws of the State of Delaware, without regard to conflict-of-law rules.",
+            "The Agreement is the complete agreement regarding its subject matter and may be amended only in a signed writing. Waiver of one breach is not a waiver of another. Invalid provisions will be enforced to the maximum lawful extent and the remainder will continue in effect."
+          ],
+          "signatures": [
+            ["Acme Cloud, Inc.", "Alice Chen", "Vice President, Sales", "December 15, 2026"],
+            ["Redwood Systems, Inc.", "Morgan Lee", "Vice President, Information Technology", "December 15, 2026"]
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "acme-cloud-product-schedule.pdf",
+      "document_id": "PS-ENTERPRISE-2026-10",
+      "document_type": "product_schedule",
+      "title": "Enterprise Product Schedule",
+      "subtitle": "Standard product capabilities and usage measurement",
+      "version": "2026.10",
+      "effective_date": "October 1, 2026",
+      "execution_date": null,
+      "intro": "This Product Schedule describes the standard Acme Cloud Enterprise edition. It applies when incorporated into an Order Form and is subject to the quantities and specific terms stated in that Order Form.",
+      "sections": [
+        {
+          "id": "PS-1",
+          "title": "Enterprise edition",
+          "paragraphs": [
+            "The Enterprise edition provides access to the Acme Cloud operations platform, administrative controls, workspace management, usage reporting, and supported identity integrations. Access is limited to the subscription term and contracted quantities in the applicable Order Form."
+          ]
+        },
+        {
+          "id": "PS-2",
+          "title": "Standard product components",
+          "table": {
+            "headers": ["Component", "Standard behavior"],
+            "rows": [
+              ["Named users", "Access is assigned to uniquely identified individuals and may be reassigned by an administrator."],
+              ["Production workspace", "Processes live operational data and contributes to metered data-processing usage."],
+              ["Sandbox workspace", "Supports non-production configuration and validation activities."],
+              ["Advanced analytics", "Adds advanced reporting and analysis capabilities when ordered."],
+              ["Usage reporting", "Reports data-processing usage in TB to two decimal places for each monthly measurement period."]
+            ],
+            "widths": [0.31, 0.69]
+          }
+        },
+        {
+          "id": "PS-3",
+          "title": "Standard included usage and overage",
+          "paragraphs": [
+            "The Enterprise edition normally includes 10 TB of data processing during each monthly measurement period. The applicable Order Form may specify a different included quantity.",
+            "Data processing above the applicable included quantity is overage usage. Overage is measured in TB, rounded to the nearest 0.01 TB, and charged at the rate stated in the Order Form. Usage counters reset at the start of each monthly measurement period."
+          ]
+        },
+        {
+          "id": "PS-4",
+          "title": "Workspace provisioning",
+          "paragraphs": [
+            "Acme Cloud provisions the number and type of workspaces identified in the Order Form. Production and sandbox workspaces have separate configuration and access controls. Workspace creation may depend on completion of required onboarding information and designation of customer administrators."
+          ]
+        },
+        {
+          "id": "PS-5",
+          "title": "SSO and SCIM",
+          "paragraphs": [
+            "When SSO is enabled, Redwood Systems may connect a supported identity provider using SAML 2.0 or OpenID Connect. When SCIM provisioning is enabled, authorized administrators may synchronize users and groups from a supported identity provider.",
+            "The customer supplies accurate identity-provider configuration, credentials, domain information, and authorized test users. Acme Cloud supplies configuration guidance and validates connectivity within the scope of contracted onboarding services."
+          ]
+        },
+        {
+          "id": "PS-6",
+          "title": "Activation, expiration, and changes",
+          "paragraphs": [
+            "Contracted entitlements become available on the start date stated in the Order Form after required account provisioning. They expire at the end of the subscription term unless renewed. Changes to quantities or product components require an executed ordering document."
+          ]
+        },
+        {
+          "id": "PS-7",
+          "title": "Schedule precedence",
+          "paragraphs": [
+            "A specific product quantity, included-usage quantity, or capability stated in an executed Order Form controls over the corresponding standard value in this Product Schedule. All non-conflicting product definitions and measurement rules remain applicable."
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "acme-cloud-premium-support-schedule.pdf",
+      "document_id": "SS-PREMIUM-2026-10",
+      "document_type": "support_schedule",
+      "title": "Premium Support Schedule",
+      "subtitle": "Coverage, response targets, escalation, and remedies",
+      "version": "2026.10",
+      "effective_date": "October 1, 2026",
+      "execution_date": null,
+      "intro": "This Support Schedule describes Acme Cloud's standard Premium Support tier. It applies to subscriptions that select Premium Support in an executed Order Form.",
+      "sections": [
+        {
+          "id": "SS-1",
+          "title": "Coverage and support channels",
+          "paragraphs": [
+            "Priority 1 incidents are covered 24 hours per day, seven days per week, including Acme Cloud holidays. Priority 2 through Priority 4 incidents are handled during business hours, defined as 8:00 a.m. to 6:00 p.m. in the customer's designated support region, Monday through Friday excluding Acme Cloud holidays.",
+            "Authorized customer contacts may submit incidents through the support web portal or by telephone. Telephone submission is available for Priority 1 and Priority 2 incidents."
+          ]
+        },
+        {
+          "id": "SS-2",
+          "title": "Severity definitions and initial-response targets",
+          "table": {
+            "headers": ["Priority", "Definition", "Initial-response target"],
+            "rows": [
+              ["Priority 1", "Production service is unavailable or a critical business operation cannot proceed, with no reasonable workaround.", "1 hour"],
+              ["Priority 2", "A major function is materially impaired, but operations can continue with a workaround.", "2 business hours"],
+              ["Priority 3", "A non-critical function is impaired or assistance is required for a product issue.", "1 business day"],
+              ["Priority 4", "General guidance, documentation, or enhancement inquiry.", "2 business days"]
+            ],
+            "widths": [0.18, 0.57, 0.25]
+          },
+          "paragraphs": [
+            "An initial response acknowledges the incident, confirms the assigned priority, and begins investigation. It is not a resolution commitment. Targets begin when Acme Cloud receives sufficient information to investigate."
+          ]
+        },
+        {
+          "id": "SS-3",
+          "title": "Customer cooperation",
+          "paragraphs": [
+            "The customer will provide reasonably requested logs, timestamps, configuration details, impact descriptions, and knowledgeable contacts. The customer will maintain current contact information and promptly test proposed workarounds when reasonably possible."
+          ]
+        },
+        {
+          "id": "SS-4",
+          "title": "Priority 1 escalation",
+          "paragraphs": [
+            "Acme Cloud assigns an incident lead to an active Priority 1 incident. If material impact remains unresolved after the initial response, an authorized customer contact may request escalation to the support duty manager through the support portal or telephone channel.",
+            "The duty manager coordinates internal technical resources and communication cadence until impact is mitigated, the incident is reclassified by agreement, or a resolution plan is accepted."
+          ]
+        },
+        {
+          "id": "SS-5",
+          "title": "Service-credit eligibility",
+          "paragraphs": [
+            "A failure to meet an applicable Priority 1 initial-response target may qualify for a service credit if the customer submits a request within 30 days after the affected incident closes. Acme Cloud will validate timestamps, severity, customer cooperation, and exclusions before determining eligibility.",
+            "An approved service credit is applied to a future invoice and is the customer's sole monetary remedy for failure to meet an initial-response target under this Schedule."
+          ]
+        },
+        {
+          "id": "SS-6",
+          "title": "Exclusions",
+          "paragraphs": [
+            "Response targets do not apply to incidents caused by unsupported modifications, customer systems outside Acme Cloud's control, failure to follow published configuration requirements, force majeure events, or the customer's failure to provide reasonably requested diagnostic information."
+          ]
+        },
+        {
+          "id": "SS-7",
+          "title": "Order Form precedence",
+          "paragraphs": [
+            "If an executed Order Form states a different initial-response target for a selected support tier, that specific target controls for the customer and subscription term identified in the Order Form. The remaining severity definitions, coverage provisions, channels, escalation process, exclusions, and service-credit rules in this Schedule continue to apply."
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "acme-cloud-redwood-onboarding-sow.pdf",
+      "document_id": "SOW-REDWOOD-2027-001",
+      "document_type": "statement_of_work",
+      "title": "Guided Enterprise Onboarding Statement of Work",
+      "subtitle": "Acme Cloud and Redwood Systems",
+      "version": "1.0",
+      "effective_date": "January 1, 2027",
+      "execution_date": "December 15, 2026",
+      "intro": "This Statement of Work describes the guided onboarding services Acme Cloud will provide for Redwood Systems under Order Form OF-REDWOOD-2027-001 and Master Services Agreement MSA-2026-01.",
+      "sections": [
+        {
+          "id": "SOW-1",
+          "title": "Objectives",
+          "paragraphs": [
+            "The parties will prepare Redwood Systems to use its contracted production and sandbox workspaces, connect its supported identity provider, train designated administrators, and assess production readiness. The services are collaborative and depend on timely completion of each party's responsibilities."
+          ]
+        },
+        {
+          "id": "SOW-2",
+          "title": "Activities, ownership, and dependencies",
+          "table": {
+            "headers": ["Activity", "Primary owner", "Target timing", "Dependency"],
+            "rows": [
+              ["Kickoff meeting", "Acme Cloud", "Within 5 business days after the effective date", "Customer project lead identified"],
+              ["Architecture and data-integration workshop", "Acme Cloud", "After kickoff", "Technical stakeholders available"],
+              ["Identity-provider access and administrator list", "Redwood Systems", "Before identity configuration", "Customer security authorization"],
+              ["SSO and SCIM configuration assistance", "Acme Cloud", "After identity prerequisite", "Identity-provider access supplied"],
+              ["Two production and one sandbox workspace setup", "Acme Cloud", "After architecture workshop", "Workspace requirements confirmed"],
+              ["Administrator training", "Acme Cloud", "After initial configuration", "Administrators named"],
+              ["Production-readiness review", "Both parties", "Before production launch", "Workspace setup, identity configuration, and training completed"],
+              ["Target production launch", "Both parties", "Within 30 calendar days after kickoff", "Production-readiness review completed"]
+            ],
+            "widths": [0.28, 0.17, 0.25, 0.3]
+          }
+        },
+        {
+          "id": "SOW-3",
+          "title": "Acme Cloud responsibilities",
+          "paragraphs": [
+            "Acme Cloud will schedule and lead kickoff; conduct the architecture and data-integration workshop; provide guidance for SSO and SCIM configuration; configure the contracted production and sandbox workspaces; deliver one administrator-training session; and participate in the production-readiness review.",
+            "Acme Cloud will identify its project lead and communicate material risks or dependencies discovered during onboarding."
+          ]
+        },
+        {
+          "id": "SOW-4",
+          "title": "Redwood Systems responsibilities",
+          "paragraphs": [
+            "Redwood Systems will identify its project lead, administrators, security contact, and technical stakeholders. Before the identity-configuration session, Redwood Systems will provide authorized identity-provider access, required domain information, and suitable test accounts.",
+            "Redwood Systems will provide timely decisions, attend scheduled sessions, validate configured access, and notify Acme Cloud of constraints that could affect the target schedule."
+          ]
+        },
+        {
+          "id": "SOW-5",
+          "title": "Milestones and completion",
+          "paragraphs": [
+            "Kickoff is complete when the kickoff meeting has occurred and Acme Cloud records the completion in the onboarding record. The production-readiness review may occur only after workspace configuration, identity setup, and administrator training are complete.",
+            "The target production launch is within 30 calendar days after kickoff. The target is dependent on Redwood Systems completing its prerequisites and is not a warranty of production readiness by a fixed date."
+          ]
+        },
+        {
+          "id": "SOW-6",
+          "title": "Fees and invoicing trigger",
+          "paragraphs": [
+            "The fixed fee for the services is USD 12,000. In accordance with the Order Form, Acme Cloud may invoice the fee when kickoff is recorded as completed. Travel, custom development, data migration, and services outside the stated scope require separate written authorization."
+          ]
+        },
+        {
+          "id": "SOW-7",
+          "title": "Changes and delay",
+          "paragraphs": [
+            "A material change to scope, responsibilities, or deliverables requires a written change order signed by both parties. A delay caused by an unmet customer prerequisite moves dependent target dates by a reasonable corresponding period without changing completed milestones."
+          ]
+        },
+        {
+          "id": "SOW-8",
+          "title": "Authorization",
+          "paragraphs": [
+            "This Statement of Work is governed by the Master Services Agreement. If it conflicts with the Order Form regarding a purchased quantity, fee, or negotiated subscription commitment, the Order Form controls."
+          ],
+          "signatures": [
+            ["Acme Cloud, Inc.", "Priya Shah", "Director, Customer Success", "December 15, 2026"],
+            ["Redwood Systems, Inc.", "Morgan Lee", "Vice President, Information Technology", "December 15, 2026"]
+          ]
+        }
+      ]
+    }
+  ]
+}

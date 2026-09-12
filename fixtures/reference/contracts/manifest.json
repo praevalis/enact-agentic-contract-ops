@@ -1,0 +1,54 @@
+{
+  "bundle_id": "ACME-REDWOOD-2027-ACTIVATION",
+  "bundle_title": "Acme Cloud and Redwood Systems Contract Bundle",
+  "documents": [
+    {
+      "document_id": "OF-REDWOOD-2027-001",
+      "document_type": "order_form",
+      "effective_date": "January 1, 2027",
+      "filename": "acme-cloud-redwood-order-form.pdf",
+      "page_count": 2,
+      "sha256": "63d2ed02a907c68e1854c5bd3350825a121d552f1971f9cfb6f6b0524e4d334c",
+      "version": "1.0"
+    },
+    {
+      "document_id": "MSA-2026-01",
+      "document_type": "master_services_agreement",
+      "effective_date": "December 15, 2026",
+      "filename": "acme-cloud-master-services-agreement.pdf",
+      "page_count": 3,
+      "sha256": "9f4c71095312a1c852dd181e92b1aa06c3b904fb08d2ec4472aac876e9c83138",
+      "version": "1.0"
+    },
+    {
+      "document_id": "PS-ENTERPRISE-2026-10",
+      "document_type": "product_schedule",
+      "effective_date": "October 1, 2026",
+      "filename": "acme-cloud-product-schedule.pdf",
+      "page_count": 2,
+      "sha256": "6574a8a974c3e1c07e89283d56dc4bf4b173bebc17db9f0486c82eeee05e344b",
+      "version": "2026.10"
+    },
+    {
+      "document_id": "SS-PREMIUM-2026-10",
+      "document_type": "support_schedule",
+      "effective_date": "October 1, 2026",
+      "filename": "acme-cloud-premium-support-schedule.pdf",
+      "page_count": 2,
+      "sha256": "4c1345dfe60cce86b1df780c0fbcd59c5c6537317796893bb3b8118f95115be0",
+      "version": "2026.10"
+    },
+    {
+      "document_id": "SOW-REDWOOD-2027-001",
+      "document_type": "statement_of_work",
+      "effective_date": "January 1, 2027",
+      "filename": "acme-cloud-redwood-onboarding-sow.pdf",
+      "page_count": 2,
+      "sha256": "ef1c16ffa70f299f64adbd5ef36d54d10582912058abcf66880382007e49cfa2",
+      "version": "1.0"
+    }
+  ],
+  "schema_version": "1.0",
+  "source": "fixtures/reference/contracts/source/bundle.json",
+  "source_sha256": "ae20894ea662a9de6989fd709a5dd2987941162d2c14e1e3b0873f977270a849"
+}

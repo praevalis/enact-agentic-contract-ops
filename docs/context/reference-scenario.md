@@ -14,7 +14,7 @@ Acme Cloud sells:
 - Standard and premium support
 - Guided enterprise onboarding
 
-Its standard commercial position includes a maximum discount without exception approval, standard product limits, defined support tiers, and reusable onboarding templates. Exact machine-readable catalogs and policies will be defined during WP0.5.
+Its standard commercial position includes a maximum discount without exception approval, standard product limits, defined support tiers, and reusable onboarding templates. Exact machine-readable catalogs and policies will be defined during WP1.5.
 
 ## Reference Customer and Deal
 
