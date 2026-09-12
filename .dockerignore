@@ -1,0 +1,62 @@
+# Version control and repository automation
+.git
+.github
+.gitignore
+.gitattributes
+.editorconfig
+.pre-commit-config.yaml
+.python-version
+
+# Local configuration and secrets
+.env
+.env.*
+*.local
+
+# Documentation, reference data, and development artifacts
+docs
+fixtures
+scripts
+tests
+**/tests
+**/*.test.*
+**/*.spec.*
+**/*.md
+*.pdf
+
+# Python environments, caches, and generated files
+.venv
+**/.venv
+__pycache__
+**/__pycache__
+*.py[cod]
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.coverage
+coverage
+htmlcov
+*.egg-info
+
+# JavaScript dependencies, caches, and build output
+**/node_modules
+**/.pnpm-store
+**/dist
+**/build
+**/.vite
+**/.eslintcache
+**/.prettier_cache
+playwright-report
+test-results
+
+# IDE, OS, and temporary files
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+*.log
+tmp
+
+# Infrastructure not consumed by application image builds
+infra/postgres
+docker-compose.yml
+README.md

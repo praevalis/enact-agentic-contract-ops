@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+.venv/
+
+# JavaScript
+apps/web/node_modules/
+apps/web/dist/
+apps/web/coverage/
+
+# Environment and local state
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+
+# Generated and temporary output
+tmp/
+
+# Test and tool caches
+.coverage
+htmlcov/
+playwright-report/
+test-results/

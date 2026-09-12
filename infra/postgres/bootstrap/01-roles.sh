@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+psql \
+  --set ON_ERROR_STOP=1 \
+  --username "$POSTGRES_USER" \
+  --dbname "$POSTGRES_DB" \
+  --set database_name="$POSTGRES_DB" \
+  --set migrate_password="$ENACT_MIGRATE_PASSWORD" \
+  --set app_password="$ENACT_APP_PASSWORD" <<'SQL'
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+
+CREATE ROLE enact_owner NOLOGIN;
+CREATE ROLE enact_migrate LOGIN NOINHERIT PASSWORD :'migrate_password';
+CREATE ROLE enact_app LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD :'app_password';
+
+GRANT enact_owner TO enact_migrate;
+GRANT CONNECT ON DATABASE :"database_name" TO enact_migrate, enact_app;
+
+SET ROLE enact_owner;
+CREATE SCHEMA enact AUTHORIZATION enact_owner;
+REVOKE ALL ON SCHEMA enact FROM PUBLIC;
+GRANT USAGE ON SCHEMA enact TO enact_app;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA enact
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO enact_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA enact
+  GRANT USAGE, SELECT ON SEQUENCES TO enact_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA enact
+  GRANT EXECUTE ON FUNCTIONS TO enact_app;
+RESET ROLE;
+SQL

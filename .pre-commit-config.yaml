@@ -1,0 +1,44 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --group dev ruff check
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: ruff-format
+        name: ruff format check
+        entry: uv run --group dev ruff format --check
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: mypy
+        name: mypy
+        entry: uv run --group dev mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: web-lint
+        name: web lint
+        entry: pnpm --dir apps/web lint
+        language: system
+        files: ^apps/web/
+        pass_filenames: false
+
+      - id: web-format
+        name: web format check
+        entry: pnpm --dir apps/web format:check
+        language: system
+        files: ^apps/web/
+        pass_filenames: false
+
+      - id: web-typecheck
+        name: web typecheck
+        entry: pnpm --dir apps/web typecheck
+        language: system
+        files: ^apps/web/
+        pass_filenames: false
