@@ -1,516 +1,262 @@
 # Enact Product Requirements Document
 
-**Product:** Enact - Agentic Contract-to-Operations Compiler  
-**Repository:** `enact-agentic-contract-ops`  
-**Document status:** Initial product requirements draft  
-**Primary user:** Deal desk team  
-**Product type:** Portfolio demonstration with deployment-ready architecture
-
+**Product:** Enact - Agentic Contract Change Compiler
+**Status:** Revised MVP requirements
+**Primary user:** Deal desk team
 ## 1. Product summary
 
-Enact converts a signed B2B contract bundle into a validated, source-cited operational activation plan. It helps the deal desk pass a contract into exact operational configuration across four equally important domains:
+Enact compiles signed B2B contracts and amendments into source-grounded operational diffs against connected systems. It discovers relevant operational capabilities and customer state, maps contract intent to target objects, asks humans only about material unresolved mappings and exceptions, and preserves evidence through execution and reconciliation.
 
-- Billing
-- Entitlements
-- Support
-- Onboarding
-
-Enact is not an autonomous system that allows a language model to edit business records directly. The agent interprets contract language, investigates relevant context, identifies uncertainty, and proposes structured changes. Deterministic services validate, authorize, execute, and reconcile those changes.
-
-The initial product focuses on activating a new customer. Amendment processing and differential recompilation are supplemental phases after the initial activation workflow is reliable.
+The product does not require an organization to recreate its operational catalogs inside Enact. Connected systems and imported artifacts remain the sources of operational truth.
 
 ## 2. Problem statement
 
-After a B2B deal is signed, deal desk and operations teams must repeatedly reinterpret contract language and manually configure multiple systems. Important terms may be distributed across an order form, MSA, SOW, pricing schedule, support terms, and amendments.
+Deal desk and operations teams must translate negotiated language into coordinated operational changes. This translation is repeated for every agreement and amendment, even though much of the target context already exists in billing, entitlement, support, and workflow systems.
 
-This creates operational risk:
+Failures include incorrect charges, mismatched access, missed obligations, inconsistent cross-system changes, amendment overreach, stale-state writes, and poor traceability.
 
-- Incorrect prices, discounts, billing schedules, or credits
-- Missing or excessive product access
-- Support commitments that do not match the contracted SLA
-- Onboarding obligations that are not tracked or assigned
-- Conflicting or superseded terms being implemented incorrectly
-- Changes being applied in one system but missed in another
-- Poor traceability from a downstream value back to the signed agreement
+## 3. Goals
 
-Enact addresses the translation gap between negotiated commercial intent and operational execution.
+The MVP shall:
 
-## 3. Product vision
+1. Interpret related contract documents with precise source provenance.
+2. Represent contract intent independently from target-system mappings.
+3. Discover relevant reference data, capabilities, constraints, and customer state through adapters.
+4. Create versioned operational snapshots for reproducible compilation.
+5. Propose and validate mappings between contract language and target objects.
+6. Ask targeted questions only for material unresolved interpretation, mapping, or policy gaps.
+7. Apply reviewed mappings only within their authorized scope.
+8. Produce a minimal plan for affected domains.
+9. Simulate, authorize, execute, and reconcile supported changes safely.
+10. Treat support and onboarding terms as typed obligations.
+11. Compile a signed amendment into a semantic and operational delta.
+12. Preserve unaffected intent and target state.
+13. Expose an evidence chain from source clause to reconciled result.
 
-The long-term vision is for a signed contract to function as executable operational intent. Enact should compile contract bundles into a durable, explainable, and reproducible operational state that can be applied, verified, amended, and audited over time.
+## 4. Non-goals
 
-## 4. Goals
+The revised MVP will not:
 
-### MVP goals
+- Recreate an organization's complete operational model inside Enact.
+- Provide a comprehensive organization-configuration wizard.
+- Replace CRM, CPQ, billing, entitlement, support, or project-management systems.
+- Implement full commercial integrations with multiple vendors.
+- Provide complete support or onboarding target adapters.
+- Infer approval authority or materiality policies automatically.
+- Promote reviewed mappings to broad scope without authorization.
+- Support every contract type, product model, or pricing structure.
+- Provide legal advice or complete legal interpretation.
+- Allow an LLM to mutate operational state directly.
+- Require every standard action to receive manual approval.
 
-The MVP must allow a deal desk user to:
-
-1. Create an activation for an organization and customer.
-2. Upload a bundle of PDF contract documents.
-3. Inspect document classification, versions, relationships, and precedence.
-4. Review source-cited operational terms extracted from the bundle.
-5. See the proposed canonical operational representation.
-6. Detect ambiguities, conflicts, unsupported requirements, and policy exceptions.
-7. Resolve targeted questions or approve grouped exceptional decisions.
-8. Preview coordinated changes across billing, entitlements, support, and onboarding.
-9. Apply the approved plan to simulated operational systems.
-10. Reconcile intended state with resulting actual state.
-11. Inspect an evidence trail connecting source terms to interpretations, decisions, actions, and results.
-
-### Portfolio goals
-
-The project should demonstrate:
-
-- Agent planning and bounded tool use
-- Structured model outputs
-- Source-grounded document interpretation
-- A canonical intermediate representation
-- Deterministic validation around probabilistic reasoning
-- Policy-based human-in-the-loop control
-- Durable workflow behavior
-- Idempotent execution and failure handling
-- Reconciliation and auditability
-- Evaluation against simpler alternatives
-
-## 5. Non-goals
-
-The MVP will not:
-
-- Replace contract authoring, negotiation, signature, or storage systems
-- Provide legal advice or determine the legal meaning of a contract
-- Allow an LLM to directly mutate operational records
-- Support every possible product, billing model, or contract structure
-- Require live production integrations
-- Fully automate amendments, renewals, or long-term drift remediation
-- Require users to manually approve every generated change
-- Treat confidence scores as objective measures of legal certainty
-
-## 6. Primary users and roles
+## 5. Users and responsibilities
 
 ### Deal desk user
 
-Owns the activation handoff after signature. The deal desk user uploads documents, reviews the compilation result, answers targeted clarification questions, and approves or routes exceptional decisions.
+Creates a case, uploads signed documents, reviews intent and mappings, answers targeted questions, and routes exceptional decisions.
 
 ### Organization administrator
 
-Configures the organization’s operational vocabulary and policies, including products, billing rules, entitlement limits, support plans, onboarding templates, document precedence rules, and approval policies.
+Connects operational systems, manages narrowly scoped policies, reviews reusable mappings, and controls mapping promotion.
 
 ### Operations reviewer
 
-May review domain-specific changes or exceptions in billing, entitlements, support, or onboarding. The exact organizational role can remain configurable for the prototype.
+Reviews domain-specific incompatibilities or policy exceptions and authorizes changes within assigned authority.
 
-### Auditor or observer
+### Auditor
 
-Inspects source evidence, decisions, execution receipts, reconciliation results, and the activation timeline.
+Inspects source evidence, snapshots, mappings, decisions, execution receipts, and reconciliation results.
 
-The MVP may use a small number of application roles, but the workflow must make ownership and accountability visible.
+## 6. Core concepts
 
-## 7. Product concepts
+### Case
 
-### Contract bundle
+A durable unit of work for either an initial activation or a contract change. Cases retain lifecycle, lineage, inputs, snapshots, compilation attempts, decisions, and outcomes.
 
-A set of related PDF documents for a customer activation. It may contain an order form, MSA, SOW, pricing schedule, support terms, amendments, or other applicable documents.
+### Contract Intent IR
 
-### Organization configuration
+A typed, versioned representation of what the signed agreement appears to require. It includes commercial terms, access, quotas, obligations, effective periods, authority, ambiguity, and provenance. It does not contain target identifiers merely because a model proposed a mapping.
 
-The organization-specific context needed to interpret and validate contracts. It includes:
+### Operational snapshots
 
-- Product and plan catalog
-- Standard prices, discounts, billing rules, and billing calendars
-- Entitlement limits and compatibility rules
-- Support tiers, coverage, severity definitions, and SLA policies
-- Onboarding templates, tasks, milestones, and ownership rules
-- Document types and precedence policies
-- Approval policies and escalation rules
+Immutable versions of externally sourced information:
 
-The product should ship with a reference SaaS organization configuration for development and demonstration. The architecture must allow an organization administrator to manage or import organization-specific configuration rather than relying on hardcoded assumptions.
+- Reference data: products, prices, features, meters, and identifiers
+- Capabilities: supported actions, constraints, and preconditions
+- Customer state: current subscriptions, entitlements, and obligations
 
-### Contract Operational Intermediate Representation (COIR)
+### Operational Capability Graph
 
-The canonical operational representation between contract interpretation and target-system execution. It is independent of the source document wording and downstream system APIs.
+A versioned projection connecting relevant snapshot entities, constraints, operations, and customer state. Every fact identifies its source connector or imported artifact.
 
-The COIR must preserve the distinction between:
+### Operational mapping
 
-- Contract facts
-- Agent interpretations
-- Organization policy facts
-- Human decisions
-- Explicit assumptions
-- Unresolved ambiguities
+A reviewable relationship between contract intent and one or more target objects. Mapping scope may be activation-only, customer-specific, contract-template-specific, product-family-specific, or organization-wide.
 
-Each interpreted operational value must have provenance and must be traceable to one or more source locations or explicitly identified external context.
+### Contractual obligation
 
-### Compilation
+A typed support or onboarding commitment containing subject, responsible party, beneficiary, action or outcome, trigger, due condition, dependencies, evidence, remedy, effective period, and source provenance.
 
-The controlled process that transforms a contract bundle and organization configuration into an operational change plan.
+### Semantic change set
 
-### Activation plan
+The difference between accepted prior Contract Intent IR and amended intent, including changed effective periods and explicitly unaffected terms.
 
-An ordered, target-specific set of proposed changes, dependencies, policy diagnostics, approval requirements, and expected results.
+### Operational diff
 
-## 8. Core user workflow
+The minimal set of target actions needed to move current state to the mapped contractual state.
+
+## 7. Core workflow
 
 ```text
-Create activation
-    ↓
-Upload PDF contract bundle
-    ↓
-Classify and relate documents
-    ↓
-Interpret terms with citations
-    ↓
-Construct COIR
-    ↓
-Validate against organization configuration
-    ↓
-Resolve ambiguity or grouped exceptions
-    ↓
-Generate cross-domain activation plan
-    ↓
-Simulate changes
-    ↓
-Apply approved changes
-    ↓
-Reconcile intended and actual state
-    ↓
-Review evidence and activation timeline
+Connect or select operational systems
+    -> Create an activation or amendment case
+    -> Upload signed documents
+    -> Capture relevant operational snapshots
+    -> Interpret source-grounded contract intent
+    -> Propose and validate target mappings
+    -> Resolve material gaps
+    -> Inspect affected-domain operational diff
+    -> Simulate and authorize exceptions
+    -> Apply idempotently
+    -> Reconcile actual state
+    -> Inspect evidence and reusable mappings
 ```
 
-The workflow must be durable. It must survive process restarts, wait for human decisions, resume safely, and preserve the history of each compilation and execution attempt.
+An amendment case additionally loads accepted prior intent and mappings, computes a semantic change set, identifies affected operational entities, and preserves unaffected state.
 
-## 9. Functional requirements
+## 8. Functional requirements
 
-### 9.1 Activation intake
+### 8.1 Case and document intake
 
-The system shall:
+The system shall accept multi-PDF bundles, preserve originals and hashes, classify documents, represent relationships and amendments, retain source locations, and expose case status and history.
 
-- Allow a deal desk user to create an activation for a customer and organization.
-- Accept multiple PDF files as one contract bundle.
-- Preserve file names, hashes, upload timestamps, and versions.
-- Extract document text and retain page or source-location references.
-- Allow the user to identify or correct document classifications when needed.
-- Show the current activation state and processing history.
+### 8.2 Operational discovery
 
-### 9.2 Document lineage and precedence
+Adapters shall expose independently versioned reference data, capabilities, constraints, and customer state. Compilation shall use immutable snapshots rather than uncontrolled live reads. Partial discovery shall produce explicit diagnostics.
 
-The system shall:
+### 8.3 Interpretation and authority
 
-- Identify likely document types and relationships.
-- Represent amendments and supersession relationships explicitly.
-- Preserve the original documents and extracted source locations.
-- Explain why one term was selected over another.
-- Surface unresolved conflicts instead of silently selecting a value.
+The system shall identify operationally material language, resolve definitions and cross-references where supported, preserve competing terms, apply scoped precedence, and construct cited Contract Intent IR candidates. Unsupported material assumptions shall stop the affected path.
 
-The default precedence strategy should be:
+### 8.4 Mapping
 
-1. An explicit amendment or supersession clause wins for the specific term and effective period it changes.
-2. A specific term overrides a general term when the scope is the same—for example, an order-form price may override a standard MSA price.
-3. A later document wins only when its authority and scope are applicable; “latest document wins” is not sufficient by itself.
-4. An unresolved conflict becomes a diagnostic requiring clarification or an authorized decision.
+The system shall search discovered target objects and previously reviewed mappings, propose candidate mappings, validate compatibility, and explain consequences. A human decision shall record both its answer and reuse scope. Broad promotion requires explicit authority.
 
-Precedence must be configurable by organization. The system must retain both the selected and non-selected interpretations, with their evidence and resolution reason.
+### 8.5 Domain behavior
 
-### 9.3 Source-grounded interpretation
+Billing and entitlements receive full validation, planning, execution, and reconciliation. Deterministic services own pricing arithmetic, periods, compatibility, quotas, and the invariant that billable allowance and enforced allowance use the same quantity and scope.
 
-The system shall:
+Support and onboarding terms compile into contractual obligations. The MVP may persist them in an internal obligation ledger rather than simulate complete downstream products.
 
-- Identify contract language with operational consequences.
-- Resolve defined terms and cross-references where possible.
-- Extract candidate terms for all four MVP domains.
-- Attach page, section, clause, or equivalent source citations.
-- Record interpretation notes and supporting context.
-- Distinguish explicit terms from inferred terms.
-- Stop or request clarification when an operationally material assumption is not supported by contract evidence or organization configuration.
+Only affected domains are required for a successful compilation.
 
-The agent may propose interpretations and alternatives, but it must not present unsupported assumptions as contract facts.
+### 8.6 Diagnostics and decisions
 
-### 9.4 Operational domains
+Diagnostics shall distinguish errors, warnings, policy exceptions, unsupported capabilities, contract ambiguities, and unresolved mappings. Interpretation clarification, mapping confirmation, and policy authorization are separate decision types.
 
-Each domain has equal MVP importance and must have its own operational model, validation rules, plan changes, and simulated target adapter.
+### 8.7 Planning and simulation
 
-#### Billing
+Plans shall identify affected and unaffected state, dependencies, preconditions, expected versions, and before-and-after values. The amendment plan shall contain only actions caused by the semantic change set.
 
-The system should support terms such as:
+### 8.8 Authorization and execution
 
-- Plan and quantity
-- Price and billing frequency
-- Discount amount or period
-- Credits and billing triggers
-- Effective dates
-- Usage or overage rules
+Only deterministic application services may invoke typed adapter mutations. Execution requires a current plan and authorization version, stable idempotency keys, and optimistic concurrency. Standard policy-compliant actions do not require individual approval.
 
-Arithmetic, date calculations, prorations, and other deterministic billing logic must be handled by deterministic services.
+### 8.9 Reconciliation
 
-#### Entitlements
+The system shall read actual target state after execution and compare it with intended state. A successful write response is insufficient. Mismatches remain visible and attributable to interpretation, mapping, planning, execution, or downstream state.
 
-The system should support terms such as:
+### 8.10 Evidence
 
-- Product edition
-- Seat or usage quantity
-- Feature access
-- Quotas and limits
-- Environments or deployment scope
-- Effective and expiration dates
-
-Compatibility and maximum-limit checks must be deterministic and based on organization configuration.
-
-#### Support
-
-The system should support terms such as:
-
-- Support tier
-- Coverage hours and holidays
-- Severity definitions
-- Initial response targets
-- Resolution or workaround targets when specified
-- Channels and escalation paths
-- Named support obligations
-- Exclusions, remedies, or service credits
-
-The system must distinguish materially different commitments such as coverage, response, and resolution. It must not treat them as interchangeable.
-
-#### Onboarding
-
-The system should support terms such as:
-
-- Workshops and implementation activities
-- Deliverables and milestones
-- Due dates or relative time windows
-- Dependencies and prerequisites
-- Customer and provider responsibilities
-- Internal owners
-
-The system should convert supported obligations into trackable tasks or milestones in the simulated onboarding system.
-
-### 9.5 Validation and diagnostics
-
-The system shall validate the proposed COIR against:
-
-- COIR schema requirements
-- Product and entitlement compatibility
-- Billing and pricing policies
-- Support policy constraints
-- Onboarding task and ownership rules
-- Date consistency and effective periods
-- Required organization configuration
-- Approval policies
-
-Diagnostics should be compiler-like and categorized as:
-
-- **Error:** Processing cannot safely continue.
-- **Warning:** Processing may continue, but the issue should be visible.
-- **Exception:** Processing can continue after an authorized decision.
-- **Information:** Relevant context with no blocking impact.
-
-Every material diagnostic should identify its affected domain, source evidence, operational impact, and recommended next step.
-
-### 9.6 Uncertainty and clarification
-
-The product must balance automation with caution.
-
-- If a conclusion is directly supported by contract language or organization configuration, processing may continue.
-- If the agent makes a low-impact, policy-supported inference, it must label the inference and preserve its basis.
-- If an unsupported assumption would materially affect billing, access, support, or onboarding, processing must stop for that issue.
-- The system should ask targeted questions that present the relevant evidence and, where possible, candidate interpretations.
-- A user response must become an explicit decision recorded in the activation evidence.
-
-### 9.7 Policy-based approvals
-
-Approval is an exception-control mechanism, not a manual confirmation step for every generated change.
-
-Organization administrators shall configure policies that determine when an activation requires a decision. Policies may use:
-
-- Domain
-- Change type
-- Threshold or deviation from standard terms
-- Contract value or customer tier
-- Non-standard product, entitlement, support, or onboarding commitment
-- Risk or impact classification
-- Presence of unresolved ambiguity
-
-At runtime:
-
-- Standard, policy-compliant changes should proceed automatically.
-- Exceptional changes should be grouped into a small number of meaningful decisions.
-- Materially unsafe or unsupported changes should block processing.
-- Users should be able to approve, reject, edit, or request clarification for a grouped exception.
-
-The user should see the complete activation plan but should not be required to approve every standard billing, entitlement, support, or onboarding action individually.
-
-### 9.8 Planning and simulation
-
-The system shall:
-
-- Generate a coordinated plan across all four domains.
-- Show proposed before-and-after state for each affected target.
-- Show dependencies and execution order.
-- Identify which changes are automatic, exceptional, blocked, or informational.
-- Provide a dry-run result before application.
-- Simulate success, validation failure, partial failure, retry, and reconciliation mismatch.
-- Explain the expected operational effect of each change.
-
-### 9.9 Execution
-
-The system shall:
-
-- Apply only authorized and validated changes.
-- Use bounded, typed adapter operations.
-- Make operations idempotent.
-- Enforce optimistic concurrency or equivalent protection against stale state.
-- Record action requests, responses, timestamps, and execution receipts.
-- Support safe retry behavior.
-- Make partial failures visible and recoverable.
-
-The MVP may use simulated billing, entitlement, support, and onboarding systems. Adapter boundaries should be designed so real integrations can replace the simulators later.
-
-### 9.10 Reconciliation
-
-After application, the system shall:
-
-- Read actual state from each target adapter.
-- Compare it with the intended state derived from the approved plan.
-- Identify mismatches by domain and change.
-- Explain whether a mismatch likely originated in interpretation, planning, execution, or downstream state.
-- Mark activation as reconciled only when required state matches or an explicit deviation is accepted.
-
-### 9.11 Evidence and auditability
-
-For each material operational value, the system should be able to show:
+Every material result shall be traceable through:
 
 ```text
-Source clause
-    → Extracted term
-    → Interpretation or decision
-    → COIR value
-    → Validation result
-    → Approval, if required
-    → Target action
-    → Execution receipt
-    → Reconciliation result
+Source span
+  -> Contract Intent IR field
+  -> target snapshot
+  -> operational mapping or decision
+  -> diagnostic
+  -> plan action
+  -> authorization
+  -> execution receipt
+  -> reconciliation result
 ```
 
-The system shall preserve an immutable activation timeline and version the relevant source documents, organization configuration, policies, agent/model configuration, tools, decisions, and outputs.
+## 9. Amendment requirements
 
-## 10. User interface requirements
+The signature demonstration shall:
 
-The primary product experience should be an operational workspace rather than a chat interface.
+- Relate the amendment to the governing agreement.
+- Preserve accepted prior intent and mappings.
+- Identify changed terms and effective periods.
+- Compute a semantic change set and impact graph.
+- Revalidate only affected mappings and domains where safe.
+- Calculate prospective billing changes without rewriting prior invoices.
+- Produce matching billing and entitlement changes.
+- Exclude unchanged products and obligations from the execution plan.
+- Detect stale target state before applying the delta.
+- Apply and reconcile without duplicate effects.
 
-The MVP should include:
+## 10. User interface
 
-- Activation queue and status view
-- Contract bundle and document relationship view
-- Source clause beside interpreted term
-- COIR or operational terms inspector
-- Diagnostics panel
-- Grouped exception and clarification review
-- Cross-domain before-and-after diff
-- Dependency-aware execution plan
-- Simulation and application status
-- Reconciliation view
-- Activation timeline and evidence detail
+The primary interface is an operational workspace, not chat. It shall include:
 
-A chat panel may support explanations or focused corrections, but it must not be the primary workflow.
+- Case queue and lifecycle status
+- Document bundle, lineage, and authority
+- Source clause beside interpreted intent
+- Discovered capabilities and provenance
+- Mapping review and reuse scope
+- Clarification and exception decisions
+- Prior-versus-amended intent
+- Affected and unaffected operational state
+- Minimal execution plan
+- Simulation, execution, reconciliation, and evidence timeline
 
-## 11. Lifecycle and state model
+Administration focuses on connections, explicit policies, reusable mappings, and discovery gaps.
 
-The initial activation lifecycle is:
+## 11. Lifecycle
 
 ```text
-Received
-  → Interpreting
-  → Validating
-  → Needs Clarification or Decision
-  → Ready
-  → Simulating
-  → Awaiting Approval, when required
-  → Applying
-  → Reconciling
-  → Active
+Received -> Discovering Context -> Interpreting -> Mapping -> Validating
+         -> Needs Clarification or Decision -> Ready -> Simulating
+         -> Awaiting Authorization -> Applying -> Reconciling -> Active
+
+Active -> Amendment Received -> Discovering Current State
+       -> Recompiling Affected Intent -> Computing Impact
+       -> Applying Delta -> Reconciling -> Active
 ```
 
-An activation may move to:
+The workflow shall survive restarts and preserve durable artifacts at each material boundary.
 
-- **Blocked** when safe processing cannot continue.
-- **Failed** when execution or reconciliation fails and recovery is not yet complete.
-- **Cancelled** when an authorized user stops the case.
+## 12. Evaluation
 
-The design must support future states for amendment recompilation and drift investigation without requiring a complete lifecycle redesign.
+Primary measures are:
 
-## 12. Evaluation requirements
+- Citation accuracy
+- Contract-intent correctness
+- Operational-context discovery coverage
+- Mapping accuracy and incorrect broad reuse
+- Human questions per case and reduction across repeated cases
+- Billing and entitlement consistency
+- Correct affected-domain identification
+- Amendment impact precision and recall
+- Delta-plan minimality and preservation of unaffected state
+- Stale-state detection
+- Final reconciliation accuracy
+- Cost and latency
 
-The benchmark should contain synthetic PDF contract bundles with known ground truth, including:
-
-- Standard terms
-- Non-standard billing and entitlement terms
-- Support SLA variations
-- Onboarding obligations and dependencies
-- Document conflicts
-- Unsupported or ambiguous language
-- Amendments for the later phase
-
-The primary evaluation measures are:
-
-### Citation accuracy
-
-Whether each material operational value is correctly supported by the relevant source clause, source location, or explicit organization configuration.
-
-### Successful activation rate
-
-Whether Enact produces and safely applies the correct cross-domain operational state, with required decisions handled appropriately and the final state reconciled.
-
-Additional useful measures include:
-
-- Ambiguity and conflict detection
-- False unsupported assumptions
-- Validity of generated plans
-- Number of unnecessary human decisions
-- Recovery from injected target failures
-- Amendment delta correctness
-- Cost and latency per activation
-
-The project should compare at least:
-
-1. A fixed extraction-and-mapping pipeline.
-2. A single-pass LLM workflow.
-3. The bounded agentic compiler with deterministic validation and replanning.
+Compare fixed extraction and mapping, a single-pass structured model, and the bounded agentic compiler. The benchmark shall include sequential cases for the same organization so mapping reuse can be measured.
 
 ## 13. Technical and operating constraints
 
-- The project must be developable without paid services.
-- It must run locally through Docker Compose.
-- It should be deployable with environment-based configuration.
-- The architecture should support local or zero-cost model options for the portfolio demonstration.
-- Real integrations should not be required for the MVP, but target adapters must be replaceable.
-- The system must not depend on undocumented assumptions about a customer’s organization.
-- Security, access control, and sensitive document handling should be represented in the architecture even if the demo uses synthetic data.
+- Development and demonstration require no paid service.
+- The product runs locally through Docker Compose and remains deployment-ready.
+- Real contract PDFs are accepted; the system does not distinguish them from generated reference documents.
+- Contract and connector content are untrusted input.
+- Tenant-owned records use authorization checks and PostgreSQL row-level security.
+- Models cannot access secrets, arbitrary SQL, unrestricted networks, or mutation operations.
+- Worker and multi-agent adoption require measured justification.
 
-## 14. Initial acceptance criteria
+## 14. MVP acceptance
 
-The MVP is successful when a reviewer can upload a contract bundle and observe Enact:
-
-1. Classify and relate the documents.
-2. Extract material terms across billing, entitlements, support, and onboarding.
-3. Display source citations for those terms.
-4. Construct a coherent operational representation.
-5. Detect at least one ambiguity, conflict, or policy exception.
-6. Ask a targeted clarification question or request a grouped exception decision.
-7. Generate a valid cross-domain activation plan.
-8. Apply the plan safely to simulated target systems.
-9. Reconcile intended and actual state.
-10. Show an evidence chain from contract clause to final operational result.
-
-Amendment processing is not required for initial MVP acceptance, but the data model and lifecycle should leave a clear path for the later amendment phase.
-
-## 15. Open decisions for the next design documents
-
-The PRD establishes product behavior. The following should be specified separately before implementation:
-
-- Exact COIR schema and versioning strategy
-- Organization configuration schema and admin experience
-- Supported PDF extraction and OCR approach
-- Agent tools, permissions, budgets, and replanning triggers
-- Workflow persistence model
-- Simulated target-system schemas and adapter contracts
-- Detailed approval policy language
-- Evaluation fixture format and target thresholds
-- Deployment topology and observability design
+The MVP is successful when a reviewer can establish the Redwood baseline from independently seeded billing and entitlement systems, resolve a material ambiguity or mapping, apply and reconcile the supported state, then upload the signed amendment and observe a correct minimal delta with complete evidence and no change to unaffected state.

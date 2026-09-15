@@ -2,7 +2,7 @@
 
 ## Reference Organization
 
-Acme Cloud provides an enterprise cloud operations platform. The product is intentionally generic: its purpose is to exercise billing, entitlements, support, and onboarding without tying Enact to one SaaS industry.
+Acme Cloud provides an enterprise cloud operations platform. The product is intentionally generic: its purpose is to exercise billing, entitlements, support obligations, and onboarding obligations without tying Enact to one SaaS industry.
 
 Acme Cloud sells:
 
@@ -14,13 +14,13 @@ Acme Cloud sells:
 - Standard and premium support
 - Guided enterprise onboarding
 
-Its standard commercial position includes a maximum discount without exception approval, standard product limits, defined support tiers, and reusable onboarding templates. Exact machine-readable catalogs and policies will be defined during WP1.5.
+Its operational reference data, capabilities, constraints, and current customer state will be exposed by independently seeded billing and entitlement simulators. Enact will discover that context through adapters rather than relying on a manually reproduced Acme Cloud catalog.
 
 ## Reference Customer and Deal
 
 Redwood Systems is purchasing Acme Cloud for an initial one-year term from January 1 through December 31, 2027.
 
-The signed contract bundle will contain:
+The signed baseline contract bundle contains:
 
 - An order form containing negotiated commercial and product terms
 - A master services agreement containing general legal and commercial terms
@@ -118,7 +118,7 @@ This ambiguity is material to both billing and entitlements:
 - A pooled interpretation provides 20 TB total before overage charges.
 - A per-workspace interpretation provides 40 TB total before overage charges.
 
-Neither the contract bundle nor the reference organization configuration resolves the scope. Enact must stop the affected compilation path, show the competing interpretations and citations, and request clarification instead of selecting a value.
+Neither the contract bundle nor the discovered operational context resolves the scope. Enact must stop the affected compilation path, show the competing interpretations and citations, and request clarification instead of selecting a value.
 
 For the reference successful-activation path, the deal desk user clarifies that the 20 TB allowance is pooled across the two production workspaces.
 
@@ -129,7 +129,7 @@ The resulting activation plan must preserve at least these dependencies:
 - The customer account exists before any domain-specific configuration is applied.
 - The enterprise edition exists before the analytics add-on and workspace entitlements are enabled.
 - The included-usage quantity used for entitlement enforcement matches the quantity used for billing overage calculation.
-- The premium-support profile references the activated customer and contracted product term.
+- The premium-support obligation references the customer and contracted product term.
 - SSO and SCIM configuration depends on the customer's identity-provider prerequisite.
 - Production-readiness review depends on workspace configuration, identity setup, and administrator training.
 - The onboarding fee is not billable until kickoff completion is recorded.
@@ -154,14 +154,14 @@ After clarification and exception approval, Enact should produce and reconcile:
 - SSO and SCIM
 - A pooled 20 TB monthly data-processing allowance
 
-### Support
+### Support obligations
 
 - Premium support for the contract term
 - 24x7 Priority 1 coverage
 - 30-minute Priority 1 and two-business-hour Priority 2 initial-response targets
 - Web, telephone, and duty-manager escalation access
 
-### Onboarding
+### Onboarding obligations
 
 - A kickoff milestone due within five business days of January 1, 2027
 - Architecture and data-integration workshop
@@ -182,7 +182,28 @@ The scenario is successful when it causes Enact to:
 - Detect and stop on the pooled-versus-per-workspace ambiguity
 - Resume after recording the clarification as explicit evidence
 - Group the negotiated discount and support commitment into a concise exception decision
-- Generate a dependency-aware plan across all four target systems
+- Generate a dependency-aware plan for billing, entitlements, and the obligation ledger
 - Apply authorized actions idempotently
 - Reconcile intended and actual state
-- Trace every material final value to contract evidence, organization policy, or a recorded human decision
+- Trace every material final value to contract evidence, discovered operational context, organization policy, or a recorded human decision
+
+## Signed Amendment Scenario
+
+On June 20, 2027, Acme Cloud and Redwood Systems sign the First Amendment to the Enterprise Subscription Order Form, effective July 1, 2027.
+
+The amendment:
+
+- Increases named user seats from 300 to 450.
+- Retains the USD 240 per-seat annual rate.
+- Applies a daily proration for the 150 additional seats from July 1 through December 31, 2027, using a 365-day year.
+- Produces an additional fixed charge of USD 18,147.95, invoiced on July 1, 2027 with Net 30 terms.
+- Increases included monthly data processing from pooled 20 TB to pooled 35 TB.
+- Explicitly states that the 35 TB capacity is shared across the two production workspaces.
+- Leaves the USD 450 per-TB overage rate unchanged.
+- Leaves the enterprise platform, advanced analytics, production and sandbox workspace quantities, SSO, and SCIM unchanged.
+- Leaves support and onboarding obligations unchanged.
+- Applies prospectively and does not reopen invoices issued before July 1, 2027.
+
+The amendment demonstration must compare accepted prior intent with amended intent, discover current billing and entitlement state, and produce only the seat, prorated billing, and shared-capacity changes. Unchanged products and obligations must not appear as mutation actions.
+
+The amendment path must reject stale target snapshots, apply the authorized delta idempotently, reconcile the resulting state, and preserve evidence from each changed amendment clause to its final billing or entitlement value.
