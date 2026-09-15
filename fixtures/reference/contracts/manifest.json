@@ -46,9 +46,18 @@
       "page_count": 2,
       "sha256": "ef1c16ffa70f299f64adbd5ef36d54d10582912058abcf66880382007e49cfa2",
       "version": "1.0"
+    },
+    {
+      "document_id": "AMD-REDWOOD-2027-001",
+      "document_type": "amendment",
+      "effective_date": "July 1, 2027",
+      "filename": "acme-cloud-redwood-first-amendment.pdf",
+      "page_count": 2,
+      "sha256": "debbbc6143bc8e8d8a55dc92dad1efb445687433f20e1f715c0f5e27eda8b3e4",
+      "version": "1.0"
     }
   ],
   "schema_version": "1.0",
   "source": "fixtures/reference/contracts/source/bundle.json",
-  "source_sha256": "ae20894ea662a9de6989fd709a5dd2987941162d2c14e1e3b0873f977270a849"
+  "source_sha256": "a2266a3b1d769af185a15d800c798c0a2045e4c685087dfaf60a21ba34c988e9"
 }

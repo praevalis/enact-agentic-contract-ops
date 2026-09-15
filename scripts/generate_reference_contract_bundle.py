@@ -403,6 +403,14 @@ def validate_document(document: dict[str, Any], path: Path) -> int:
             "Within 30 calendar days after kickoff",
             "when kickoff is recorded as completed",
         ],
+        "AMD-REDWOOD-2027-001": [
+            "450 seats",
+            "USD 18,147.95",
+            "35 TB aggregate monthly data processing capacity",
+            "shared across the two production workspaces",
+            "USD 450 per TB",
+            "does not modify the Enterprise platform subscription",
+        ],
     }
     for phrase in required_phrases[document["document_id"]]:
         if phrase not in extracted:
@@ -469,7 +477,9 @@ def generate_bundle() -> None:
         "documents": manifest_documents,
     }
     MANIFEST_PATH.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
 
     print(f"Generated and validated {len(documents)} PDFs in {OUTPUT_DIR.relative_to(ROOT)}")

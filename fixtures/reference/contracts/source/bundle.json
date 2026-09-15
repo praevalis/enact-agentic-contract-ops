@@ -434,6 +434,90 @@
           ]
         }
       ]
+    },
+    {
+      "filename": "acme-cloud-redwood-first-amendment.pdf",
+      "document_id": "AMD-REDWOOD-2027-001",
+      "document_type": "amendment",
+      "title": "First Amendment to Enterprise Subscription Order Form",
+      "subtitle": "Acme Cloud and Redwood Systems",
+      "version": "1.0",
+      "effective_date": "July 1, 2027",
+      "execution_date": "June 20, 2027",
+      "intro": "This First Amendment is entered into by Acme Cloud, Inc. and Redwood Systems, Inc. under Enterprise Subscription Order Form OF-REDWOOD-2027-001 and Master Services Agreement MSA-2026-01. Capitalized terms not defined here have the meanings given in the Agreement.",
+      "sections": [
+        {
+          "id": "AMD-1",
+          "title": "Authority and amendment effective date",
+          "paragraphs": [
+            "The parties execute this First Amendment on June 20, 2027. The modifications stated below become effective on July 1, 2027 and apply prospectively from that date.",
+            "This First Amendment modifies only the identified seat quantity, resulting prorated charge, and included data-processing capacity under Order Form OF-REDWOOD-2027-001."
+          ]
+        },
+        {
+          "id": "AMD-2",
+          "title": "Named user seat increase",
+          "paragraphs": [
+            "Effective July 1, 2027, the contracted quantity of Named user seats increases from 300 seats to 450 seats. The price remains USD 240 per seat per year."
+          ]
+        },
+        {
+          "id": "AMD-3",
+          "title": "Prospective prorated seat charge",
+          "table": {
+            "headers": ["Pricing input", "Contracted value"],
+            "rows": [
+              ["Previous seat quantity", "300 seats"],
+              ["Amended seat quantity", "450 seats"],
+              ["Additional seat quantity", "150 seats"],
+              ["Annual unit price", "USD 240 per seat per year"],
+              ["Annualized additional charge", "USD 36,000"],
+              ["Proration period", "184 days from July 1 through December 31, 2027"],
+              ["Proration convention", "Actual days over a 365-day year"],
+              ["Additional fixed charge", "USD 18,147.95"]
+            ],
+            "widths": [0.45, 0.55]
+          },
+          "paragraphs": [
+            "Acme Cloud will invoice the additional fixed charge of USD 18,147.95 on July 1, 2027. Payment is due within 30 days after the invoice date.",
+            "The charge is prospective only and does not reopen, credit, or otherwise adjust invoices issued before July 1, 2027."
+          ]
+        },
+        {
+          "id": "AMD-4",
+          "title": "Shared included data-processing capacity",
+          "paragraphs": [
+            "Effective July 1, 2027, the subscription includes 35 TB aggregate monthly data processing capacity, shared across the two production workspaces. This replaces the 20 TB monthly data processing capacity stated in the Order Form.",
+            "Usage above the 35 TB aggregate monthly included capacity remains charged at USD 450 per TB and invoiced monthly in arrears. The existing measurement and rounding rules remain unchanged."
+          ]
+        },
+        {
+          "id": "AMD-5",
+          "title": "Terms not modified",
+          "paragraphs": [
+            "This First Amendment does not modify the Enterprise platform subscription, Advanced analytics add-on, two production workspaces, one sandbox workspace, SSO, or SCIM provisioning.",
+            "Premium Support commitments and guided onboarding obligations remain unchanged. The subscription end date remains December 31, 2027."
+          ]
+        },
+        {
+          "id": "AMD-6",
+          "title": "Precedence and ratification",
+          "paragraphs": [
+            "If this First Amendment conflicts with the Order Form or another incorporated document concerning a term expressly modified here, this First Amendment controls from July 1, 2027. All other terms of the Agreement are ratified and remain in effect."
+          ]
+        },
+        {
+          "id": "AMD-7",
+          "title": "Authorization",
+          "paragraphs": [
+            "Each signatory represents that the signatory is authorized to bind the identified party. Electronic signatures and counterparts are effective as originals."
+          ],
+          "signatures": [
+            ["Acme Cloud, Inc.", "Alice Chen", "Vice President, Sales", "June 20, 2027"],
+            ["Redwood Systems, Inc.", "Morgan Lee", "Vice President, Information Technology", "June 20, 2027"]
+          ]
+        }
+      ]
     }
   ]
 }
