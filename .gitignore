@@ -11,6 +11,7 @@ __pycache__/
 apps/web/node_modules/
 apps/web/dist/
 apps/web/coverage/
+*.tsbuildinfo
 
 # Environment and local state
 .env

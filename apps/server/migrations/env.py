@@ -18,9 +18,9 @@ target_metadata = None
 
 def database_url() -> str:
     try:
-        return os.environ["ENACT_MIGRATION_DATABASE_URL"]
+        return os.environ['ENACT_MIGRATION_DATABASE_URL']
     except KeyError as error:
-        raise RuntimeError("ENACT_MIGRATION_DATABASE_URL is required") from error
+        raise RuntimeError('ENACT_MIGRATION_DATABASE_URL is required') from error
 
 
 def run_migrations_offline() -> None:
@@ -28,7 +28,7 @@ def run_migrations_offline() -> None:
         url=database_url(),
         target_metadata=target_metadata,
         literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
+        dialect_opts={'paramstyle': 'named'},
         compare_type=True,
     )
 
@@ -37,7 +37,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    connection.execute(text("SET ROLE enact_owner"))
+    connection.execute(text('SET ROLE enact_owner'))
     context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
 
     with context.begin_transaction():
@@ -46,10 +46,10 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = database_url()
+    configuration['sqlalchemy.url'] = database_url()
     connectable = async_engine_from_config(
         configuration,
-        prefix="sqlalchemy.",
+        prefix='sqlalchemy.',
         poolclass=pool.NullPool,
     )
 
