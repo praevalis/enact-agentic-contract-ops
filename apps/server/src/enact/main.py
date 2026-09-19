@@ -25,7 +25,7 @@ def create_app(settings: Settings) -> FastAPI:
     """
     configure_logging(settings.log_level)
 
-    database_manager = DatabaseManager(settings.database_url)
+    database_manager = DatabaseManager(settings.database.database_url)
     object_storage_manager = ObjectStorageManager(
         endpoint_url=str(settings.object_storage.endpoint_url),
         access_key=settings.object_storage.access_key.get_secret_value(),
@@ -63,9 +63,7 @@ def create_app(settings: Settings) -> FastAPI:
 
     app = FastAPI(title='Enact API', version='0.1.0', lifespan=lifespan)
     app.add_middleware(RequestContextMiddleware)
-
     app.include_router(v1_router, prefix='/api')
-
     return app
 
 

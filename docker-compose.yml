@@ -66,12 +66,12 @@ services:
         "head",
       ]
     environment:
-      ENACT_ENVIRONMENT: ${ENACT_ENVIRONMENT:-development}
       ENACT_DATABASE_HOST: postgres
       ENACT_DATABASE_USERNAME: enact_migrate
       ENACT_DATABASE_PASSWORD: ${ENACT_MIGRATE_PASSWORD:-local-migrate-only}
       ENACT_DATABASE_PORT: 5432
       ENACT_DATABASE_NAME: ${ENACT_DATABASE_NAME:-enact}
+      ENACT_DATABASE_SSL_MODE: ${ENACT_DATABASE_SSL_MODE:-disable}
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,6 +89,7 @@ services:
       ENACT_DATABASE_PASSWORD: ${ENACT_DATABASE_PASSWORD:-local-app-only}
       ENACT_DATABASE_PORT: 5432
       ENACT_DATABASE_NAME: ${ENACT_DATABASE_NAME:-enact}
+      ENACT_DATABASE_SSL_MODE: ${ENACT_DATABASE_SSL_MODE:-disable}
       ENACT_API_URL: ${ENACT_API_URL:-http://localhost:8000}
       ENACT_OBJECT_STORAGE_ENDPOINT_URL: http://object-store:9000
       ENACT_OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-enact-local}
