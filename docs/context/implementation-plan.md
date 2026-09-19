@@ -174,6 +174,9 @@ Execution and reconciliation remain application-controlled stages. The model rec
 
 ## 7. Persistence direction
 
+The detailed relational schema, aggregate ownership, tenant boundaries, and migration sequence
+are defined in `docs/context/schema-design.md`.
+
 The initial relational design should cover:
 
 - Organizations, users, memberships, and customers

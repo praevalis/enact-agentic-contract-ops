@@ -25,14 +25,14 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 
 ## WP2 — Database and Runtime Foundation
 
-- [ ] **WP2.1** Design the relational schema, aggregate ownership, tenant boundaries, and migration sequence needed by the planned slices.
-- [ ] **WP2.2** Add typed settings, environment loading, and startup validation.
-- [ ] **WP2.3** Add async SQLAlchemy engine, session, transaction, and dependency-injection boundaries using asyncpg.
+- [x] **WP2.1** Design the relational schema, aggregate ownership, tenant boundaries, and migration sequence needed by the planned slices.
+- [x] **WP2.2** Add typed settings, environment loading, and startup validation.
+- [x] **WP2.3** Add async SQLAlchemy engine, session, transaction, and dependency-injection boundaries using asyncpg.
 - [x] **WP2.4** Bootstrap `enact_owner`, `enact_migrate`, and `enact_app` with scoped privileges.
-- [ ] **WP2.5** Establish Alembic ownership, grant, default-privilege, and downgrade conventions.
+- [x] **WP2.5** Establish Alembic ownership, grant, default-privilege, and downgrade conventions.
 - [ ] **WP2.6** Implement transaction-local tenant context and fail-closed database access.
 - [ ] **WP2.7** Add reusable RLS migration helpers and tenant-isolation tests.
-- [ ] **WP2.8** Add liveness and dependency-aware readiness endpoints.
+- [x] **WP2.8** Add liveness and dependency-aware readiness endpoints.
 - [ ] **WP2.9** Implement the S3-compatible object-storage boundary and MinIO adapter.
 - [ ] **WP2.10** Establish reproducible OpenAPI TypeScript client generation.
 - [ ] **WP2.11** Add structured logging and request correlation.

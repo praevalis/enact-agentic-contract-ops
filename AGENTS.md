@@ -64,7 +64,7 @@ Run checks proportionate to the files changed. The repository-wide baseline is:
 ```text
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy
+uv run pyright
 uv run pytest
 pnpm --dir apps/web lint
 pnpm --dir apps/web format:check

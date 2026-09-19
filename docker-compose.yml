@@ -2,11 +2,11 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-enact}
+      POSTGRES_DB: ${ENACT_DATABASE_NAME:-enact}
       POSTGRES_USER: ${POSTGRES_USER:-enact_bootstrap}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-bootstrap-only}
       ENACT_MIGRATE_PASSWORD: ${ENACT_MIGRATE_PASSWORD:-local-migrate-only}
-      ENACT_APP_PASSWORD: ${ENACT_APP_PASSWORD:-local-app-only}
+      ENACT_APP_PASSWORD: ${ENACT_DATABASE_PASSWORD:-local-app-only}
     ports:
       - "5432:5432"
     volumes:
@@ -48,7 +48,12 @@ services:
         "head",
       ]
     environment:
-      ENACT_MIGRATION_DATABASE_URL: ${ENACT_MIGRATION_DATABASE_URL:-postgresql+asyncpg://enact_migrate:local-migrate-only@postgres:5432/enact}
+      ENACT_ENVIRONMENT: ${ENACT_ENVIRONMENT:-development}
+      ENACT_DATABASE_HOST: postgres
+      ENACT_DATABASE_USERNAME: enact_migrate
+      ENACT_DATABASE_PASSWORD: ${ENACT_MIGRATE_PASSWORD:-local-migrate-only}
+      ENACT_DATABASE_PORT: 5432
+      ENACT_DATABASE_NAME: ${ENACT_DATABASE_NAME:-enact}
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,6 +63,15 @@ services:
     build:
       context: .
       dockerfile: infra/docker/server.Dockerfile
+    environment:
+      ENACT_ENVIRONMENT: ${ENACT_ENVIRONMENT:-development}
+      ENACT_LOG_LEVEL: ${ENACT_LOG_LEVEL:-INFO}
+      ENACT_DATABASE_HOST: postgres
+      ENACT_DATABASE_USERNAME: enact_app
+      ENACT_DATABASE_PASSWORD: ${ENACT_DATABASE_PASSWORD:-local-app-only}
+      ENACT_DATABASE_PORT: 5432
+      ENACT_DATABASE_NAME: ${ENACT_DATABASE_NAME:-enact}
+      ENACT_API_URL: ${ENACT_API_URL:-http://localhost:8000}
     restart: unless-stopped
     ports:
       - "8000:8000"

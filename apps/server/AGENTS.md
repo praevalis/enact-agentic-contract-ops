@@ -76,7 +76,7 @@ Run the relevant targeted tests while iterating. Before declaring server work co
 ```text
 uv run ruff check apps/server
 uv run ruff format --check apps/server
-uv run mypy
+uv run pyright
 uv run pytest apps/server/tests
 ```
 
