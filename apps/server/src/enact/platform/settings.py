@@ -8,8 +8,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import URL
 
 
-class Settings(BaseSettings):
-    """Validated configuration for the Enact API process."""
+class DatabaseSettings(BaseSettings):
+    """Validated database configuration shared by API and migration processes."""
 
     model_config = SettingsConfigDict(
         env_file='.env',
@@ -18,13 +18,11 @@ class Settings(BaseSettings):
     )
 
     environment: Literal['development', 'testing', 'production'] = 'development'
-    log_level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] = 'INFO'
     database_host: str = 'localhost'
     database_username: str = 'enact_app'
     database_password: SecretStr
     database_port: int = 5432
     database_name: str = 'enact'
-    api_url: AnyHttpUrl = AnyHttpUrl('http://localhost:8000')
 
     @property
     def database_url(self) -> str:
@@ -47,6 +45,30 @@ class Settings(BaseSettings):
         return url.render_as_string(hide_password=False)
 
 
+class ObjectStorageSettings(BaseSettings):
+    """Validated configuration for the S3-compatible object-storage boundary."""
+
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_prefix='ENACT_OBJECT_STORAGE_',
+        extra='ignore',
+    )
+
+    endpoint_url: AnyHttpUrl = AnyHttpUrl('http://localhost:9000')
+    access_key: SecretStr
+    secret_key: SecretStr
+    bucket: str = 'enact-documents'
+    region: str = 'us-east-1'
+
+
+class Settings(DatabaseSettings):
+    """Validated configuration for the Enact API process."""
+
+    log_level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] = 'INFO'
+    api_url: AnyHttpUrl = AnyHttpUrl('http://localhost:8000')
+    object_storage: ObjectStorageSettings
+
+
 @lru_cache
 def get_settings() -> Settings:
     """Load and cache the process configuration.
@@ -58,4 +80,5 @@ def get_settings() -> Settings:
         pydantic.ValidationError: If required configuration is missing or invalid.
     """
     # BaseSettings supplies required fields from environment sources at runtime.
-    return Settings()  # pyright: ignore[reportCallIssue]
+    object_storage = ObjectStorageSettings()  # pyright: ignore[reportCallIssue]
+    return Settings(object_storage=object_storage)  # pyright: ignore[reportCallIssue]

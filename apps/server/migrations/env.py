@@ -4,7 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from alembic.runtime.environment import NameFilterParentNames, NameFilterType
 from enact.platform.database import metadata
-from enact.platform.settings import Settings
+from enact.platform.settings import DatabaseSettings
 from sqlalchemy import Connection, pool, text
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
@@ -35,7 +35,7 @@ def include_name(
     return object_type != 'schema' or name == APPLICATION_SCHEMA
 
 
-def get_migration_settings() -> Settings:
+def get_migration_settings() -> DatabaseSettings:
     """Load settings for the privileged migration process.
 
     Returns:
@@ -45,7 +45,7 @@ def get_migration_settings() -> Settings:
         pydantic.ValidationError: If required migration configuration is missing or invalid.
     """
     # BaseSettings supplies required fields from the migration process environment.
-    return Settings()  # pyright: ignore[reportCallIssue]
+    return DatabaseSettings()  # pyright: ignore[reportCallIssue]
 
 
 def run_migrations_offline() -> None:

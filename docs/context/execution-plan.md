@@ -33,7 +33,7 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 - [x] **WP2.6** Implement transaction-local tenant context and fail-closed database access.
 - [x] **WP2.7** Add reusable RLS migration helpers and tenant-isolation tests.
 - [x] **WP2.8** Add liveness and dependency-aware readiness endpoints.
-- [ ] **WP2.9** Implement the S3-compatible object-storage boundary and MinIO adapter.
+- [x] **WP2.9** Implement the S3-compatible object-storage boundary and MinIO adapter.
 - [ ] **WP2.10** Establish reproducible OpenAPI TypeScript client generation.
 - [ ] **WP2.11** Add structured logging and request correlation.
 - [ ] **WP2.12** Extend CI for migrations, PostgreSQL privileges, RLS, generated contracts, and container builds.

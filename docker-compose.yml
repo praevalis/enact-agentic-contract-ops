@@ -19,7 +19,7 @@ services:
       retries: 10
 
   object-store:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-enact-local}
@@ -34,6 +34,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  object-store-init:
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        mc alias set local http://object-store:9000 "$${MINIO_ROOT_USER}"
+        "$${MINIO_ROOT_PASSWORD}" && mc mb --ignore-existing
+        "local/$${ENACT_OBJECT_STORAGE_BUCKET}"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-enact-local}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-enact-local-secret}
+      ENACT_OBJECT_STORAGE_BUCKET: ${ENACT_OBJECT_STORAGE_BUCKET:-enact-documents}
+    depends_on:
+      object-store:
+        condition: service_healthy
+    restart: "no"
 
   migrate:
     build:
@@ -72,11 +90,18 @@ services:
       ENACT_DATABASE_PORT: 5432
       ENACT_DATABASE_NAME: ${ENACT_DATABASE_NAME:-enact}
       ENACT_API_URL: ${ENACT_API_URL:-http://localhost:8000}
+      ENACT_OBJECT_STORAGE_ENDPOINT_URL: http://object-store:9000
+      ENACT_OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-enact-local}
+      ENACT_OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-enact-local-secret}
+      ENACT_OBJECT_STORAGE_BUCKET: ${ENACT_OBJECT_STORAGE_BUCKET:-enact-documents}
+      ENACT_OBJECT_STORAGE_REGION: ${ENACT_OBJECT_STORAGE_REGION:-us-east-1}
     restart: unless-stopped
     ports:
       - "8000:8000"
     depends_on:
       migrate:
+        condition: service_completed_successfully
+      object-store-init:
         condition: service_completed_successfully
 
   web:
