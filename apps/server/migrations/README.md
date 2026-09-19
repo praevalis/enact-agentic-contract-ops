@@ -58,6 +58,31 @@ before implementation.
   configuration and runtime grants in the same reviewed change. The reusable RLS mechanics
   and isolation tests are established by WP2.7.
 
+Tenant-owned revisions use the shared RLS helpers and keep grants explicit:
+
+```python
+from alembic import op
+from enact.platform.database.migrations import disable_tenant_rls, enable_tenant_rls
+
+
+def upgrade() -> None:
+    op.create_table(...)
+    enable_tenant_rls(op, 'customers')
+    op.execute('GRANT SELECT, INSERT, UPDATE ON enact.customers TO enact_app')
+
+
+def downgrade() -> None:
+    op.execute('REVOKE SELECT, INSERT, UPDATE ON enact.customers FROM enact_app')
+    disable_tenant_rls(op, 'customers')
+    op.drop_table('customers', schema='enact')
+```
+
+The upgrade order is table, constraints, indexes, RLS, then grants. Downgrades revoke grants,
+remove RLS, and drop dependent objects in reverse order. The RLS helper assumes a non-null
+UUID `organization_id` column and creates one `tenant_isolation` policy for `enact_app` with
+matching `USING` and `WITH CHECK` expressions. Do not add a second permissive policy that can
+broaden this predicate.
+
 Online migrations are the authoritative execution path because the environment can assume
 `enact_owner` transaction-locally. Offline SQL generation cannot perform that connection-time
 role transition; generated SQL must be executed by an operator under equivalent owner

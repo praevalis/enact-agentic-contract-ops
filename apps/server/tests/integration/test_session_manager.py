@@ -8,27 +8,27 @@ from enact.platform.database.session import SessionManager
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-_CURRENT_ORGANIZATION_ID = text("SELECT NULLIF(current_setting('enact.organization_id', true), '')")
-_BACKEND_PROCESS_ID = text('SELECT pg_backend_pid()')
+CURRENT_ORGANIZATION_ID = text("SELECT NULLIF(current_setting('enact.organization_id', true), '')")
+BACKEND_PROCESS_ID = text('SELECT pg_backend_pid()')
 
 
 async def _get_current_organization_id(session: AsyncSession) -> str | None:
     """Return the transaction-local organization identifier when configured."""
-    return cast(str | None, await session.scalar(_CURRENT_ORGANIZATION_ID))
+    return cast(str | None, await session.scalar(CURRENT_ORGANIZATION_ID))
 
 
 async def _get_backend_process_id(session: AsyncSession) -> int:
     """Return the PostgreSQL process identifier serving the session."""
-    process_id = cast(int | None, await session.scalar(_BACKEND_PROCESS_ID))
+    process_id = cast(int | None, await session.scalar(BACKEND_PROCESS_ID))
     assert process_id is not None
     return process_id
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 class TestSessionManagerTenantScope:
     """Verify transaction-local tenant session behavior."""
 
-    @pytest.mark.asyncio
     async def test_sets_tenant_context_for_current_transaction(
         self,
         session_manager: SessionManager,
@@ -40,7 +40,6 @@ class TestSessionManagerTenantScope:
 
         assert configured_id == str(organization_id)
 
-    @pytest.mark.asyncio
     async def test_commit_clears_tenant_context(
         self,
         session_manager: SessionManager,
@@ -55,7 +54,6 @@ class TestSessionManagerTenantScope:
         assert unscoped_process_id == tenant_process_id
         assert configured_id is None
 
-    @pytest.mark.asyncio
     async def test_rollback_clears_tenant_context_before_pool_reuse(
         self,
         session_manager: SessionManager,
