@@ -35,7 +35,7 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 - [x] **WP2.8** Add liveness and dependency-aware readiness endpoints.
 - [x] **WP2.9** Implement the S3-compatible object-storage boundary and MinIO adapter.
 - [ ] **WP2.10** Establish reproducible OpenAPI TypeScript client generation.
-- [ ] **WP2.11** Add structured logging and request correlation.
+- [x] **WP2.11** Add structured logging and request correlation.
 - [ ] **WP2.12** Extend CI for migrations, PostgreSQL privileges, RLS, generated contracts, and container builds.
 
 ## WP3 — Case and Document Intake Slice

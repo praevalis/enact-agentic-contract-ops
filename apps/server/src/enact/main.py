@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -5,8 +6,12 @@ from fastapi import FastAPI
 
 from enact.api.v1 import router as v1_router
 from enact.platform.database import DatabaseManager
+from enact.platform.logging import configure_logging
+from enact.platform.middleware.request_context import RequestContextMiddleware
 from enact.platform.object_storage import ObjectStorageManager
 from enact.platform.settings import Settings, get_settings
+
+logger = logging.getLogger(__name__)
 
 
 def create_app(settings: Settings) -> FastAPI:
@@ -18,6 +23,8 @@ def create_app(settings: Settings) -> FastAPI:
     Returns:
         The configured FastAPI application.
     """
+    configure_logging(settings.log_level)
+
     database_manager = DatabaseManager(settings.database_url)
     object_storage_manager = ObjectStorageManager(
         endpoint_url=str(settings.object_storage.endpoint_url),
@@ -50,10 +57,12 @@ def create_app(settings: Settings) -> FastAPI:
 
             yield
         finally:
+            logger.info('Application resource cleanup started')
             await object_storage_manager.dispose()
             await database_manager.dispose()
 
     app = FastAPI(title='Enact API', version='0.1.0', lifespan=lifespan)
+    app.add_middleware(RequestContextMiddleware)
 
     app.include_router(v1_router, prefix='/api')
 
