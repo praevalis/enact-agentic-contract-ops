@@ -12,6 +12,7 @@ dev = [
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "ruff==0.16.7",
+    "testcontainers[postgres]==4.15.0",
 ]
 artifacts = [
     "pdfplumber==0.11.10",
@@ -44,3 +45,7 @@ typeCheckingMode = "strict"
 [tool.pytest.ini_options]
 testpaths = ["apps/server/tests"]
 addopts = "--strict-config --strict-markers"
+markers = [
+    "unit: tests that do not require external infrastructure",
+    "integration: tests that exercise real infrastructure boundaries",
+]

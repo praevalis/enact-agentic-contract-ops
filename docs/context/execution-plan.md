@@ -30,7 +30,7 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 - [x] **WP2.3** Add async SQLAlchemy engine, session, transaction, and dependency-injection boundaries using asyncpg.
 - [x] **WP2.4** Bootstrap `enact_owner`, `enact_migrate`, and `enact_app` with scoped privileges.
 - [x] **WP2.5** Establish Alembic ownership, grant, default-privilege, and downgrade conventions.
-- [ ] **WP2.6** Implement transaction-local tenant context and fail-closed database access.
+- [x] **WP2.6** Implement transaction-local tenant context and fail-closed database access.
 - [ ] **WP2.7** Add reusable RLS migration helpers and tenant-isolation tests.
 - [x] **WP2.8** Add liveness and dependency-aware readiness endpoints.
 - [ ] **WP2.9** Implement the S3-compatible object-storage boundary and MinIO adapter.
