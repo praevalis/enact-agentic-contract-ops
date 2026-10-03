@@ -1,6 +1,6 @@
 # Enact Relational Schema Design
 
-**Status:** Accepted WP2 design
+**Status:** Accepted design, updated for WP3 local authentication
 **Related:** `docs/context/implementation-plan.md`, `docs/context/execution-plan.md`
 
 ## 1. Purpose
@@ -156,7 +156,7 @@ writes.
 
 | Aggregate | Root | Owned records |
 |---|---|---|
-| Identity and tenancy | Organization | Memberships and customers |
+| Identity and tenancy | Organization | Memberships, customers, and customer identifiers |
 | Case | Case | Lineage edges, runs, and lifecycle state |
 | Audit | Organization | Append-only audit events |
 | Document bundle | Bundle | Documents, versions, relationships, parsed items, and source spans |
@@ -188,9 +188,15 @@ on tenant-owned rows.
 
 ### `users`
 
-Represents a human identity independently of organization membership. It contains the
-authentication-provider subject, display identity, and identity status. A user may belong to
-multiple organizations.
+Represents a human identity independently of organization membership. The initial application
+authenticates users locally with email and password; it does not require an external identity
+provider. Store a normalized email address with a global uniqueness constraint, a password hash
+produced by a maintained password-hashing library, display identity, identity status, and
+timestamps. Never store plaintext passwords. A user may belong to multiple organizations.
+
+Authentication remains a replaceable application boundary, but provider subjects and a general
+identity-provider integration are not part of the initial schema. Session and token persistence
+is deferred until the selected authentication library and revocation requirements call for it.
 
 ### `memberships`
 
@@ -201,8 +207,22 @@ tenant-scoped uniqueness constraint prevents duplicate membership in one organiz
 ### `customers`
 
 Represents an organization's contractual counterparty, such as Redwood Systems. It contains
-organization-scoped identity, display name, optional business identifiers, and lifecycle
-status. Cases and customer-state discovery reference it.
+organization-scoped identity, display name, and lifecycle status. Cases and customer-state
+discovery reference it. External identifiers are stored in `customer_identifiers` rather than
+as nullable columns on this table.
+
+### `customer_identifiers`
+
+Stores identifiers assigned to a customer by an external system or by the customer itself. It
+contains `organization_id`, `customer_id`, `identifier_type`, `identifier_value`, optional
+`issuing_system`, and timestamps. A customer may have multiple identifiers, such as CRM account,
+billing account, ERP customer number, contract number, tax/VAT/GST identifier, or an entitlement
+system account ID.
+
+The table repeats `organization_id` and references `customers` through a composite foreign key.
+Uniqueness is enforced within an organization and issuing namespace, for example
+`(organization_id, issuing_system, identifier_type, identifier_value)`. Identifier values are
+opaque strings; Enact does not infer their meaning beyond the declared type and issuer.
 
 ### `cases`
 
