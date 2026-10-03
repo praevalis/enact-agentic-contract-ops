@@ -47,6 +47,11 @@ No BFF, graph database, vector database, message broker, domain microservices, o
 
 ## 3. Core boundaries
 
+### Identity
+
+Owns local authentication, Argon2id credential hashing, access-token and refresh-session
+workflows, organization context, membership authorization, and role-based access policy. Identity
+application contracts remain independent from SQLAlchemy persistence mappings.
 ### Cases
 
 Owns initial activation and amendment lifecycle, lineage, active document bundle, accepted intent, compilation attempts, concurrency version, and terminal or recoverable state.
@@ -298,6 +303,7 @@ The slice order is:
 10. Amendment delta compilation is the signature demonstration.
 11. Models cannot authorize or execute target mutations.
 12. Workers and multiple agents require measured evidence.
+
 
 
 

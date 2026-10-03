@@ -3,18 +3,18 @@
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 
 from enact.infrastructure.database.dependencies import get_database_manager
 from enact.infrastructure.database.manager import DatabaseManager
 from enact.infrastructure.object_storage import ObjectStorageManager, ObjectStorageUnavailableError
 from enact.infrastructure.object_storage.dependencies import get_object_storage_manager
+from enact.platform.schemas import BaseRead
 
 router = APIRouter(prefix='/health', tags=['health'])
 
 
-class HealthRead(BaseModel):
+class HealthRead(BaseRead):
     """Health status returned by operational probes."""
 
     status: Literal['ok']

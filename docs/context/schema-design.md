@@ -1,4 +1,4 @@
-﻿# Enact Relational Schema Design
+# Enact Relational Schema Design
 
 **Status:** Accepted design, updated for WP3 local authentication
 **Related:** `docs/context/implementation-plan.md`, `docs/context/execution-plan.md`
@@ -190,13 +190,12 @@ on tenant-owned rows.
 
 Represents a human identity independently of organization membership. The initial application
 authenticates users locally with email and password; it does not require an external identity
-provider. Store a normalized email address with a global uniqueness constraint, a password hash
-produced by a maintained password-hashing library, display identity, identity status, and
+provider. Store a normalized email address with a global uniqueness constraint, an Argon2id password hash produced by a maintained password-hashing library, display identity, identity status, and
 timestamps. Never store plaintext passwords. A user may belong to multiple organizations.
 
 Authentication remains a replaceable application boundary, but provider subjects and a general
 identity-provider integration are not part of the initial schema. The initial token design uses
-short-lived signed access tokens and rotated opaque refresh tokens. Refresh-token hashes and
+short-lived signed access tokens and rotated opaque refresh tokens. Deterministic refresh-token digests and
 session state are persisted in `auth_sessions`; raw refresh tokens are never stored.
 
 Login resolves an active organization automatically. The preferred order is the session's last
@@ -209,7 +208,7 @@ must revalidate active membership before setting transaction-local RLS context.
 
 Represents a revocable authentication session and refresh-token family. It is global
 control-plane data because authentication begins before an organization is selected. It contains
-`user_id`, `current_organization_id`, `refresh_token_hash`, `token_family_id`, creation and expiry
+`user_id`, `current_organization_id`, `refresh_token_digest`, `token_family_id`, creation and expiry
 timestamps, last-use metadata, revocation metadata, and an optional replacement-session reference.
 Refresh-token rotation revokes the presented session and creates its replacement. Reuse of a
 revoked token revokes the complete token family.
@@ -723,5 +722,8 @@ Before WP2.1 is accepted, the design must demonstrate that:
 - Unchanged products, obligations, and prior invoices remain provably unaffected.
 - Every material reconciled result can be traced back to source evidence, discovered context,
   organization policy, or a recorded human decision.
+
+
+
 
 
