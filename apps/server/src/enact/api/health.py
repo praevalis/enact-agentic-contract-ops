@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 
-from enact.platform.database.dependencies import get_database_manager
-from enact.platform.database.manager import DatabaseManager
-from enact.platform.object_storage import ObjectStorageManager, ObjectStorageUnavailableError
-from enact.platform.object_storage.dependencies import get_object_storage_manager
+from enact.infrastructure.database.dependencies import get_database_manager
+from enact.infrastructure.database.manager import DatabaseManager
+from enact.infrastructure.object_storage import ObjectStorageManager, ObjectStorageUnavailableError
+from enact.infrastructure.object_storage.dependencies import get_object_storage_manager
 
 router = APIRouter(prefix='/health', tags=['health'])
 

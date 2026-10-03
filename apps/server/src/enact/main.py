@@ -5,10 +5,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from enact.api.v1 import router as v1_router
-from enact.platform.database import DatabaseManager
+from enact.infrastructure.database import DatabaseManager
+from enact.infrastructure.object_storage import ObjectStorageManager
 from enact.platform.logging import configure_logging
 from enact.platform.middleware.request_context import RequestContextMiddleware
-from enact.platform.object_storage import ObjectStorageManager
 from enact.platform.settings import Settings, get_settings
 
 logger = logging.getLogger(__name__)

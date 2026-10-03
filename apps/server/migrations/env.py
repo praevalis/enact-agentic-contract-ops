@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from alembic.runtime.environment import NameFilterParentNames, NameFilterType
-from enact.platform.database import metadata
+from enact.infrastructure.database import metadata
 from enact.platform.settings import DatabaseSettings
 from sqlalchemy import Connection, pool, text
 from sqlalchemy.ext.asyncio import async_engine_from_config

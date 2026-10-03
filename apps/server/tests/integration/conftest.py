@@ -6,8 +6,8 @@ import pytest
 import pytest_asyncio
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
-from enact.platform.database.migrations import enable_tenant_rls
-from enact.platform.database.session import (
+from enact.infrastructure.database.migrations import enable_tenant_rls
+from enact.infrastructure.database.session import (
     SessionManager,
     create_database_engine,
     create_session_factory,

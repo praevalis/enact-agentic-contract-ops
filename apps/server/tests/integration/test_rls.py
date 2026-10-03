@@ -6,8 +6,8 @@ from uuid import UUID, uuid4
 import pytest
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
-from enact.platform.database.migrations import disable_tenant_rls, enable_tenant_rls
-from enact.platform.database.session import (
+from enact.infrastructure.database.migrations import disable_tenant_rls, enable_tenant_rls
+from enact.infrastructure.database.session import (
     SessionManager,
     create_database_engine,
 )

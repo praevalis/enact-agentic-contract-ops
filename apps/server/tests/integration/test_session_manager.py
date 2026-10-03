@@ -4,7 +4,7 @@ from typing import cast
 from uuid import uuid4
 
 import pytest
-from enact.platform.database.session import SessionManager
+from enact.infrastructure.database.session import SessionManager
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 

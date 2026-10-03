@@ -6,7 +6,7 @@ import pytest
 import pytest_asyncio
 from aiobotocore.config import AioConfig
 from aiobotocore.session import get_session
-from enact.platform.object_storage import (
+from enact.infrastructure.object_storage import (
     ObjectNotFoundError,
     ObjectStorage,
     ObjectStorageManager,

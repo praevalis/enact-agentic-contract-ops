@@ -1,7 +1,7 @@
 """Unit tests for reusable database migration helpers."""
 
 import pytest
-from enact.platform.database.migrations import enable_tenant_rls
+from enact.infrastructure.database.migrations import enable_tenant_rls
 from sqlalchemy.sql import Executable
 
 

@@ -1,4 +1,4 @@
-# Enact Technical Implementation Plan
+﻿# Enact Technical Implementation Plan
 
 **Status:** Accepted revised baseline
 **Related:** `docs/context/prd.md`
@@ -87,6 +87,13 @@ Adapters expose system facts and bounded operations. Only the execution service 
 
 Evidence connects source, intent, snapshots, mappings, decisions, actions, receipts, and reconciliation. Evaluation exercises the same services as the application.
 
+### Runtime and infrastructure boundaries
+
+Cross-cutting runtime concerns remain under `enact.platform`, including settings, errors, logging,
+and request middleware. External-system adapters remain under `enact.infrastructure`, including
+PostgreSQL and object storage. Persistence models and repository implementations are infrastructure
+concerns; domain and application policies remain in their respective product modules. The identity
+module will be introduced with the authentication slice rather than as speculative scaffolding.
 ## 4. Operational representations
 
 ### Contract Intent IR
@@ -291,3 +298,7 @@ The slice order is:
 10. Amendment delta compilation is the signature demonstration.
 11. Models cannot authorize or execute target mutations.
 12. Workers and multiple agents require measured evidence.
+
+
+
+

@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
-from enact.platform.database.migrations import disable_tenant_rls, enable_tenant_rls
+from enact.infrastructure.database.migrations import disable_tenant_rls, enable_tenant_rls
 from sqlalchemy.dialects import postgresql
 
 revision: str = '0001_identity_case'
