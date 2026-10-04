@@ -5,7 +5,13 @@ from uuid import uuid4
 
 import pytest
 from enact.identity.authentication import AccessTokenCodec, PasswordHasher
-from enact.identity.errors import InvalidAccessTokenError
+from enact.identity.errors import (
+    AuthSessionNotFoundError,
+    InvalidAccessTokenError,
+    MembershipNotFoundError,
+    OrganizationNotFoundError,
+    UserNotFoundError,
+)
 from enact.identity.schemas import LoginCreate
 from pydantic import ValidationError
 
@@ -83,3 +89,25 @@ class TestAuthentication:
 
         with pytest.raises(InvalidAccessTokenError, match='Invalid access token'):
             codec.decode(token)
+
+
+@pytest.mark.unit
+class TestIdentityErrors:
+    """Verify stable identity error contracts."""
+
+    def test_not_found_errors_have_stable_codes(self) -> None:
+        """Expose entity-specific not-found codes for application handling."""
+        identifier = uuid4()
+        errors = (
+            UserNotFoundError(identifier),
+            OrganizationNotFoundError(identifier),
+            MembershipNotFoundError(identifier),
+            AuthSessionNotFoundError(identifier),
+        )
+
+        assert [error.code for error in errors] == [
+            'user_not_found',
+            'organization_not_found',
+            'membership_not_found',
+            'auth_session_not_found',
+        ]

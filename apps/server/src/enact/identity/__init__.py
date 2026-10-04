@@ -2,7 +2,17 @@
 
 from .authentication import AccessTokenCodec, PasswordHasher, Principal
 from .enums import MembershipRole, MembershipStatus
-from .errors import IdentityError, InvalidAccessTokenError
+from .errors import (
+    AuthSessionAlreadyExistsError,
+    AuthSessionNotFoundError,
+    IdentityError,
+    InvalidAccessTokenError,
+    MembershipAlreadyExistsError,
+    MembershipNotFoundError,
+    OrganizationNotFoundError,
+    UserEmailAlreadyExistsError,
+    UserNotFoundError,
+)
 from .schemas import (
     LoginCreate,
     MembershipRead,
@@ -15,17 +25,24 @@ from .schemas import (
 
 __all__ = [
     'AccessTokenCodec',
+    'AuthSessionAlreadyExistsError',
+    'AuthSessionNotFoundError',
     'IdentityError',
     'InvalidAccessTokenError',
     'LoginCreate',
     'MembershipRead',
+    'MembershipAlreadyExistsError',
+    'MembershipNotFoundError',
     'MembershipRole',
     'MembershipStatus',
     'OrganizationRead',
     'OrganizationSwitchUpdate',
+    'OrganizationNotFoundError',
     'PasswordHasher',
     'Principal',
     'PrincipalRead',
     'TokenRead',
+    'UserEmailAlreadyExistsError',
+    'UserNotFoundError',
     'UserRead',
 ]

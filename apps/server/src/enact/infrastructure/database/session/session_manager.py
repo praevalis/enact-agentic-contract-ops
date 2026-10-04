@@ -75,6 +75,30 @@ class SessionManager:
             )
             yield session
 
+    @asynccontextmanager
+    async def user_session_scope(self, user_id: UUID) -> AsyncGenerator[AsyncSession]:
+        """Yield a session with transaction-local user context.
+
+        This scope is intended only for pre-organization identity operations such as
+        membership discovery during login. The caller owns flushing and commitment.
+
+        Args:
+            user_id: Authenticated user identifier used by user-scoped RLS policies.
+
+        Yields:
+            A session whose current transaction is scoped to the user.
+
+        Raises:
+            RuntimeError: If the session manager has been disposed.
+            sqlalchemy.exc.SQLAlchemyError: If PostgreSQL cannot set the user context.
+        """
+        async with self.session_scope() as session:
+            await session.execute(
+                text("SELECT set_config('enact.user_id', :user_id, true)"),
+                {'user_id': str(user_id)},
+            )
+            yield session
+
     async def dispose(self) -> None:
         """Dispose the underlying connection pool."""
         if self._engine is None:
