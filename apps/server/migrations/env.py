@@ -1,6 +1,7 @@
 import asyncio
 from logging.config import fileConfig
 
+import enact.infrastructure.database.models  # noqa: F401  # pyright: ignore[reportUnusedImport]
 from alembic import context
 from alembic.runtime.environment import NameFilterParentNames, NameFilterType
 from enact.infrastructure.database import metadata
