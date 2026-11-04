@@ -87,21 +87,6 @@ class InvalidRefreshTokenError(IdentityError):
         )
 
 
-class NoActiveMembershipError(IdentityError):
-    """Raised when a user cannot access any active organization."""
-
-    def __init__(self, user_id: UUID) -> None:
-        """Initialize a no-active-membership error.
-
-        Args:
-            user_id: User without an active organization membership.
-        """
-        super().__init__(
-            message=f'User {user_id} has no active organization membership.',
-            code='no_active_membership',
-        )
-
-
 class OrganizationMembershipNotFoundError(IdentityError):
     """Raised when a user is not a member of an organization."""
 
@@ -218,4 +203,15 @@ class AuthSessionNotFoundError(IdentityError):
         super().__init__(
             message=f'Authentication session {session_id} does not exist.',
             code='auth_session_not_found',
+        )
+
+
+class InvalidInvitationCodeError(IdentityError):
+    """Raised when an invitation code is invalid, expired, or already used."""
+
+    def __init__(self) -> None:
+        """Initialize an invitation-code error."""
+        super().__init__(
+            message='The invitation code is invalid or no longer available.',
+            code='invalid_invitation_code',
         )

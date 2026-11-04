@@ -22,6 +22,7 @@ This file extends the repository-level `AGENTS.md` for work under `apps/server`.
   a guard from the work that follows it when this makes the flow easier to scan. Ruff formatting
   alone does not establish these boundaries.
 - Use Google-style docstrings.
+- Use `#NOTE` and `#TODO` markers when they clarify a constraint or a concrete follow-up.
 - Every public method must have a complete docstring with `Args`, `Returns`, and `Raises` sections whenever those sections apply.
 - Private methods may use a one-line descriptive docstring. Use a complete Google-style docstring when their behavior, invariants, side effects, or failure modes need explanation.
 - Document meaningful exceptions in `Raises`; do not list exceptions that cannot escape the method.

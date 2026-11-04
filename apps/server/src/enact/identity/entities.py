@@ -52,9 +52,23 @@ class AuthSession:
 
     id: UUID
     user_id: UUID
-    current_organization_id: UUID
+    current_organization_id: UUID | None
     token_family_id: UUID
     refresh_token_digest: str
     expires_at: datetime
     revoked_at: datetime | None
     replaced_by_session_id: UUID | None
+
+
+@dataclass(frozen=True, slots=True)
+class OrganizationInvitation:
+    """A single-use code assigned to an organization and role."""
+
+    id: UUID
+    organization_id: UUID
+    code_digest: str
+    role: str
+    created_by_user_id: UUID
+    expires_at: datetime
+    redeemed_by_user_id: UUID | None
+    redeemed_at: datetime | None

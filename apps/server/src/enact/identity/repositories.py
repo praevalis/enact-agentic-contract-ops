@@ -9,6 +9,7 @@ from .entities import (
     AuthSession,
     Membership,
     Organization,
+    OrganizationInvitation,
     User,
     UserOrganizationPreference,
 )
@@ -341,7 +342,7 @@ class AuthSessionRepository(Protocol):
         self,
         *,
         user_id: UUID,
-        organization_id: UUID,
+        organization_id: UUID | None,
         token_family_id: UUID,
         refresh_token_digest: str,
         expires_at: datetime,
@@ -444,4 +445,26 @@ class AuthSessionRepository(Protocol):
         Returns:
             The user's active authentication sessions.
         """
+        ...
+
+
+class OrganizationInvitationRepository(Protocol):
+    """Persist and redeem organization invitation codes."""
+
+    async def create(
+        self,
+        *,
+        organization_id: UUID,
+        code_digest: str,
+        role: str,
+        created_by_user_id: UUID,
+        expires_at: datetime,
+    ) -> OrganizationInvitation:
+        """Create one invitation for an organization and role."""
+        ...
+
+    async def redeem(
+        self, *, code_digest: str, user_id: UUID, redeemed_at: datetime
+    ) -> OrganizationInvitation | None:
+        """Atomically claim an unexpired invitation by its code digest."""
         ...

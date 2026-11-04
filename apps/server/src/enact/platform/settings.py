@@ -72,15 +72,28 @@ class Settings(BaseSettings):
     environment: Literal['development', 'testing', 'production'] = 'development'
     log_level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] = 'INFO'
     api_url: AnyHttpUrl = AnyHttpUrl('http://localhost:8000')
+    web_url: AnyHttpUrl = AnyHttpUrl('http://localhost:5173')
+    auth_secret_key: SecretStr = SecretStr('development-only-change-this-auth-secret-key')
     database: DatabaseSettings
     object_storage: ObjectStorageSettings
 
     @model_validator(mode='after')
-    def require_database_tls_in_production(self) -> Self:
-        """Reject production application configuration without database transport security."""
+    def validate_security_configuration(self) -> Self:
+        """Reject weak signing keys and insecure production database transport."""
+        if len(self.auth_secret_key.get_secret_value()) < 32:
+            raise ValueError('auth secret key must contain at least 32 characters')
+
         if self.environment == 'production' and self.database.ssl_mode != 'require':
             msg = 'database SSL mode must be require in production'
             raise ValueError(msg)
+
+        if (
+            self.environment == 'production'
+            and self.auth_secret_key.get_secret_value()
+            == 'development-only-change-this-auth-secret-key'
+        ):
+            raise ValueError('auth secret key must be configured in production')
+
         return self
 
 

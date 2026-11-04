@@ -17,9 +17,9 @@ class Principal:
     """Authenticated user and organization context for one request."""
 
     user_id: UUID
-    organization_id: UUID
-    membership_id: UUID
-    role: str
+    organization_id: UUID | None
+    membership_id: UUID | None
+    role: str | None
     session_id: UUID
     access_token_expires_at: datetime
 
@@ -87,9 +87,9 @@ class AccessTokenCodec:
         *,
         user_id: UUID,
         session_id: UUID,
-        organization_id: UUID,
-        membership_id: UUID,
-        role: str,
+        organization_id: UUID | None,
+        membership_id: UUID | None,
+        role: str | None,
         expires_at: datetime,
     ) -> str:
         """Create a signed access token.
@@ -108,8 +108,8 @@ class AccessTokenCodec:
         claims = {
             'sub': str(user_id),
             'sid': str(session_id),
-            'org': str(organization_id),
-            'mid': str(membership_id),
+            'org': str(organization_id) if organization_id is not None else None,
+            'mid': str(membership_id) if membership_id is not None else None,
             'role': role,
             'exp': expires_at,
         }

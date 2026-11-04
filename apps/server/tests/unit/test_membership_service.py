@@ -111,6 +111,9 @@ class _UnitOfWork:
         self.commit_count = 0
         self.rollback_count = 0
 
+    async def set_organization_context(self, organization_id: UUID) -> None:
+        self.organization_context = organization_id
+
     async def __aenter__(self) -> '_UnitOfWork':
         return self
 

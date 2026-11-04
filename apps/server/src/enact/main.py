@@ -1,10 +1,26 @@
 import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from urllib.parse import urlsplit
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from enact.api.v1 import router as v1_router
+from enact.identity.errors import (
+    AuthSessionInactiveError,
+    AuthSessionNotFoundError,
+    IdentityError,
+    InvalidAccessTokenError,
+    InvalidCredentialsError,
+    InvalidInvitationCodeError,
+    InvalidRefreshTokenError,
+    MembershipAlreadyExistsError,
+    OrganizationNotFoundError,
+    UserEmailAlreadyExistsError,
+    UserNotFoundError,
+)
 from enact.infrastructure.database import DatabaseManager
 from enact.infrastructure.object_storage import ObjectStorageManager
 from enact.platform.logging import configure_logging
@@ -62,7 +78,52 @@ def create_app(settings: Settings) -> FastAPI:
             await database_manager.dispose()
 
     app = FastAPI(title='Enact API', version='0.1.0', lifespan=lifespan)
+    web_url = urlsplit(str(settings.web_url))
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[f'{web_url.scheme}://{web_url.netloc}'],
+        allow_credentials=True,
+        allow_methods=['GET', 'POST', 'PATCH'],
+        allow_headers=['Authorization', 'Content-Type'],
+    )
     app.add_middleware(RequestContextMiddleware)
+
+    @app.exception_handler(IdentityError)
+    async def handle_identity_error(_request: Request, error: IdentityError) -> JSONResponse:
+        """Return a stable error code for expected identity failures.
+
+        Args:
+            _request: Request that raised the domain error.
+            error: Expected identity failure.
+
+        Returns:
+            Public error response with a stable code.
+        """
+        if isinstance(
+            error,
+            (
+                InvalidAccessTokenError,
+                InvalidCredentialsError,
+                InvalidRefreshTokenError,
+                AuthSessionInactiveError,
+                AuthSessionNotFoundError,
+            ),
+        ):
+            response_status = 401
+        elif isinstance(error, (MembershipAlreadyExistsError, UserEmailAlreadyExistsError)):
+            response_status = 409
+        elif isinstance(error, (OrganizationNotFoundError, UserNotFoundError)):
+            response_status = 404
+        elif isinstance(error, InvalidInvitationCodeError):
+            response_status = 400
+        else:
+            response_status = 403
+
+        return JSONResponse(
+            status_code=response_status,
+            content={'code': error.code, 'message': error.message},
+        )
+
     app.include_router(v1_router, prefix='/api')
     return app
 

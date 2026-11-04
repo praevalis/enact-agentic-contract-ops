@@ -43,7 +43,7 @@ class SqlAlchemyAuthSessionRepository:
         self,
         *,
         user_id: UUID,
-        organization_id: UUID,
+        organization_id: UUID | None,
         token_family_id: UUID,
         refresh_token_digest: str,
         expires_at: datetime,
@@ -130,10 +130,13 @@ class SqlAlchemyAuthSessionRepository:
             AuthSessionNotFoundError: If the session does not exist.
         """
         model = await self._session.get(AuthSessionModel, session_id)
+
         if model is None:
             raise AuthSessionNotFoundError(session_id)
+
         model.current_organization_id = organization_id
         await flush_session(self._session, constraint_errors=_CONSTRAINT_ERRORS)
+
         return to_auth_session(model)
 
     async def revoke(self, session_id: UUID, revoked_at: datetime) -> None:

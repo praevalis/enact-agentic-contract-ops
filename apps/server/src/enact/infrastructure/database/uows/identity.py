@@ -2,13 +2,16 @@
 
 from types import TracebackType
 from typing import Self
+from uuid import UUID
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from enact.audit import AuditEventRepository
 from enact.identity.repositories import (
     AuthSessionRepository,
     MembershipRepository,
+    OrganizationInvitationRepository,
     OrganizationRepository,
     UserOrganizationPreferenceRepository,
     UserRepository,
@@ -18,6 +21,7 @@ from ..repositories import (
     SqlAlchemyAuditEventRepository,
     SqlAlchemyAuthSessionRepository,
     SqlAlchemyMembershipRepository,
+    SqlAlchemyOrganizationInvitationRepository,
     SqlAlchemyOrganizationRepository,
     SqlAlchemyUserOrganizationPreferenceRepository,
     SqlAlchemyUserRepository,
@@ -33,6 +37,7 @@ class SqlAlchemyIdentityUnitOfWork:
     preferences: UserOrganizationPreferenceRepository
     sessions: AuthSessionRepository
     audit_events: AuditEventRepository
+    invitations: OrganizationInvitationRepository
 
     def __init__(self, session: AsyncSession) -> None:
         """Initialize repositories for one database transaction.
@@ -47,6 +52,27 @@ class SqlAlchemyIdentityUnitOfWork:
         self.preferences = SqlAlchemyUserOrganizationPreferenceRepository(session)
         self.sessions = SqlAlchemyAuthSessionRepository(session)
         self.audit_events = SqlAlchemyAuditEventRepository(session)
+        self.invitations = SqlAlchemyOrganizationInvitationRepository(session)
+
+    async def set_user_context(self, user_id: UUID) -> None:
+        """Set the transaction-local user scope for membership discovery."""
+        await self._session.execute(
+            text("SELECT set_config('enact.user_id', :value, true)"), {'value': str(user_id)}
+        )
+
+    async def set_organization_context(self, organization_id: UUID) -> None:
+        """Set the transaction-local organization scope for tenant mutations."""
+        await self._session.execute(
+            text("SELECT set_config('enact.organization_id', :value, true)"),
+            {'value': str(organization_id)},
+        )
+
+    async def set_invitation_digest(self, code_digest: str) -> None:
+        """Restrict invitation lookup to a presented bearer code."""
+        await self._session.execute(
+            text("SELECT set_config('enact.invitation_digest', :value, true)"),
+            {'value': code_digest},
+        )
 
     async def __aenter__(self) -> Self:
         """Enter a unit-of-work scope.

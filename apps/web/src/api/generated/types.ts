@@ -4,6 +4,125 @@
  */
 
 export interface paths {
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Login
+         * @description Authenticate and select an available organization when one exists.
+         *
+         *     Args:
+         *         payload: Submitted local credentials.
+         *         response: HTTP response receiving the refresh cookie.
+         *         _: Browser Origin validation dependency.
+         *         authentication: Local authentication workflow.
+         *         settings: Runtime cookie settings.
+         *
+         *     Returns:
+         *         Account or organization context and access token.
+         */
+        post: operations["login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Logout
+         * @description Revoke the current token family and clear its browser cookie.
+         *
+         *     Args:
+         *         response: HTTP response whose cookie will be cleared.
+         *         _: Browser Origin validation dependency.
+         *         principal: Validated current account principal.
+         *         authentication: Local authentication workflow.
+         */
+        post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh
+         * @description Rotate the refresh cookie and renew the current access context.
+         *
+         *     Args:
+         *         response: HTTP response receiving the replacement cookie.
+         *         _: Browser Origin validation dependency.
+         *         authentication: Local authentication workflow.
+         *         settings: Runtime cookie settings.
+         *         refresh_token: Opaque refresh token from the browser cookie.
+         *
+         *     Returns:
+         *         Renewed account or organization context.
+         *
+         *     Raises:
+         *         InvalidRefreshTokenError: If the cookie is absent or unusable.
+         */
+        post: operations["refresh_api_v1_auth_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register
+         * @description Register an account and issue an account-only session.
+         *
+         *     Args:
+         *         payload: New account credentials and profile.
+         *         response: HTTP response receiving the refresh cookie.
+         *         _: Browser Origin validation dependency.
+         *         authentication: Local authentication workflow.
+         *         settings: Runtime cookie settings.
+         *
+         *     Returns:
+         *         Account context and short-lived access token.
+         */
+        post: operations["register_api_v1_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health/live": {
         parameters: {
             query?: never;
@@ -57,10 +176,186 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Organization
+         * @description Create an organization and activate its creator as administrator.
+         *
+         *     Args:
+         *         payload: Organization name.
+         *         principal: Validated account principal.
+         *         onboarding: Organization setup workflow.
+         *
+         *     Returns:
+         *         Active organization context.
+         */
+        post: operations["create_organization_api_v1_organizations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Join Organization
+         * @description Redeem a manually shared invitation code.
+         *
+         *     Args:
+         *         payload: Submitted invitation code.
+         *         principal: Validated account principal.
+         *         onboarding: Organization setup workflow.
+         *
+         *     Returns:
+         *         Active organization context.
+         */
+        post: operations["join_organization_api_v1_organizations_join_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Invitation
+         * @description Issue a one-time code for an administrator to share.
+         *
+         *     Args:
+         *         organization_id: Organization receiving the invited user.
+         *         payload: Role to grant upon redemption.
+         *         principal: Validated organization principal.
+         *         onboarding: Invitation issuing workflow.
+         *
+         *     Returns:
+         *         Invitation code shown once and its expiry.
+         */
+        post: operations["create_invitation_api_v1_organizations__organization_id__invitations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Me
+         * @description Return the authenticated user's public profile.
+         *
+         *     Args:
+         *         principal: Validated account principal.
+         *         uow: Identity transaction boundary.
+         *
+         *     Returns:
+         *         Public user profile.
+         */
+        get: operations["read_me_api_v1_users_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/me/organization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Switch Organization
+         * @description Switch the current session to another active membership.
+         *
+         *     Args:
+         *         payload: Target organization identifier.
+         *         principal: Validated account principal.
+         *         uow: Identity transaction boundary.
+         *         settings: Access-token signing configuration.
+         *
+         *     Returns:
+         *         New organization context and access token.
+         */
+        patch: operations["switch_organization_api_v1_users_me_organization_patch"];
+        trace?: never;
+    };
+    "/api/v1/users/me/organizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Organizations
+         * @description List the user's active organizations for the context switcher.
+         *
+         *     Account organization lists are returned in full so the switcher is complete.
+         *
+         *     Args:
+         *         principal: Validated account principal.
+         *         uow: Identity transaction boundary.
+         *         settings: Access-token signing configuration.
+         *
+         *     Returns:
+         *         Active organization and membership pairs.
+         */
+        get: operations["list_organizations_api_v1_users_me_organizations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /**
          * HealthRead
          * @description Health status returned by operational probes.
@@ -72,6 +367,204 @@ export interface components {
              */
             status: "ok";
         };
+        /**
+         * LoginCreate
+         * @description Credentials submitted to create an authenticated session.
+         */
+        LoginCreate: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /**
+         * MembershipRead
+         * @description An organization's membership exposed to the authenticated user.
+         */
+        MembershipRead: {
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+            role: components["schemas"]["MembershipRole"];
+            status: components["schemas"]["MembershipStatus"];
+        };
+        /**
+         * MembershipRole
+         * @description Roles assigned to organization memberships.
+         * @enum {string}
+         */
+        MembershipRole: "deal_desk" | "administrator" | "operations_reviewer" | "auditor";
+        /**
+         * MembershipStatus
+         * @description Lifecycle states that affect membership authorization.
+         * @enum {string}
+         */
+        MembershipStatus: "active" | "suspended" | "revoked";
+        /**
+         * OrganizationContextRead
+         * @description Active context after organization creation, joining, or switching.
+         */
+        OrganizationContextRead: {
+            membership: components["schemas"]["MembershipRead"];
+            organization: components["schemas"]["OrganizationRead"];
+            token: components["schemas"]["TokenRead"];
+        };
+        /**
+         * OrganizationCreate
+         * @description Organization details supplied during account onboarding.
+         */
+        OrganizationCreate: {
+            /** Name */
+            name: string;
+        };
+        /**
+         * OrganizationInvitationCreate
+         * @description Role selected by an administrator issuing an invitation.
+         */
+        OrganizationInvitationCreate: {
+            role: components["schemas"]["MembershipRole"];
+        };
+        /**
+         * OrganizationInvitationRead
+         * @description One-time visible invitation code and its grant.
+         */
+        OrganizationInvitationRead: {
+            /** Code */
+            code: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+            role: components["schemas"]["MembershipRole"];
+        };
+        /**
+         * OrganizationJoinCreate
+         * @description Invitation code submitted to join an existing organization.
+         */
+        OrganizationJoinCreate: {
+            /** Code */
+            code: string;
+        };
+        /**
+         * OrganizationMembershipRead
+         * @description An organization available for account context switching.
+         */
+        OrganizationMembershipRead: {
+            membership: components["schemas"]["MembershipRead"];
+            organization: components["schemas"]["OrganizationRead"];
+        };
+        /**
+         * OrganizationRead
+         * @description An organization available to the authenticated user.
+         */
+        OrganizationRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+        };
+        /**
+         * OrganizationSwitchUpdate
+         * @description Request to change the organization context of the current session.
+         */
+        OrganizationSwitchUpdate: {
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+        };
+        /**
+         * PrincipalRead
+         * @description Authenticated principal and its active organization context.
+         */
+        PrincipalRead: {
+            membership: components["schemas"]["MembershipRead"] | null;
+            organization: components["schemas"]["OrganizationRead"] | null;
+            token: components["schemas"]["TokenRead"];
+            user: components["schemas"]["UserRead"];
+        };
+        /**
+         * TokenRead
+         * @description Short-lived access-token result returned after authentication.
+         */
+        TokenRead: {
+            /** Access Token */
+            access_token: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Organization Id */
+            organization_id: string | null;
+            /**
+             * Token Type
+             * @default Bearer
+             */
+            token_type: string;
+        };
+        /**
+         * UserCreate
+         * @description Local credentials and profile supplied during registration.
+         */
+        UserCreate: {
+            /** Display Name */
+            display_name: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /**
+         * UserRead
+         * @description The authenticated user's safe public identity.
+         */
+        UserRead: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Status */
+            status: string;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -81,6 +574,121 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrincipalRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    refresh_api_v1_auth_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                enact_refresh?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrincipalRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_api_v1_auth_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrincipalRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_liveness_api_v1_health_live_get: {
         parameters: {
             query?: never;
@@ -117,6 +725,180 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthRead"];
+                };
+            };
+        };
+    };
+    create_organization_api_v1_organizations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationContextRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    join_organization_api_v1_organizations_join_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationJoinCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationContextRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_invitation_api_v1_organizations__organization_id__invitations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationInvitationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationInvitationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_me_api_v1_users_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserRead"];
+                };
+            };
+        };
+    };
+    switch_organization_api_v1_users_me_organization_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationSwitchUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationContextRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_organizations_api_v1_users_me_organizations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationMembershipRead"][];
                 };
             };
         };

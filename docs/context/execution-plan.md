@@ -40,7 +40,7 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 ## WP3 — Case and Document Intake Slice
 
 - [x] **WP3.1** Add organization, membership, customer, case, case-lineage, and audit persistence with RLS.
-- [ ] **WP3.2** Implement the replaceable authentication boundary and role authorization.
+- [x] **WP3.2** Implement the replaceable authentication boundary and role authorization.
 - [ ] **WP3.3** Expose case create, list, detail, and lifecycle APIs.
 - [ ] **WP3.4** Build the case queue and case creation experience using the generated client.
 - [ ] **WP3.5** Add document bundle, document, version, and relationship persistence with RLS.

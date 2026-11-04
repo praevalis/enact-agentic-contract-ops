@@ -1,5 +1,7 @@
 """Identity application services that orchestrate authentication workflows."""
 
+import base64
+import re
 import secrets
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -15,10 +17,10 @@ from .errors import (
     AuthSessionNotFoundError,
     InvalidAccessTokenError,
     InvalidCredentialsError,
+    InvalidInvitationCodeError,
     InvalidRefreshTokenError,
     MembershipNotFoundError,
     MembershipPermissionDeniedError,
-    NoActiveMembershipError,
     OrganizationMembershipNotFoundError,
     OrganizationNotFoundError,
 )
@@ -30,8 +32,8 @@ class AuthenticationResult:
     """Result returned after creating or rotating an authenticated session."""
 
     user: User
-    organization: Organization
-    membership: Membership
+    organization: Organization | None
+    membership: Membership | None
     session: AuthSession
     access_token: str
     refresh_token: str
@@ -47,6 +49,16 @@ class OrganizationContextResult:
     membership: Membership
     access_token: str
     access_token_expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class InvitationIssueResult:
+    """Invitation metadata and its one-time visible bearer code."""
+
+    code: str
+    organization_id: UUID
+    role: MembershipRole
+    expires_at: datetime
 
 
 class AuthenticationService:
@@ -94,7 +106,9 @@ class AuthenticationService:
         self._clock = clock or (lambda: datetime.now(UTC))
         self._refresh_token_factory = refresh_token_factory or (lambda: secrets.token_urlsafe(48))
 
-    async def register(self, *, email: str, password: str, display_name: str) -> User:
+    async def register(
+        self, *, email: str, password: str, display_name: str
+    ) -> AuthenticationResult:
         """Register a local user identity.
 
         Args:
@@ -103,16 +117,45 @@ class AuthenticationService:
             display_name: Name shown for the user.
 
         Returns:
-            The created user.
+            The new account-only session and issued tokens.
         """
         async with self._uow:
             password_hash = self._password_hasher.hash(password)
 
-            # TODO: Issue an account-only session for organization onboarding.
-            return await self._uow.users.create(
+            user = await self._uow.users.create(
                 email=email,
                 password_hash=password_hash,
                 display_name=display_name,
+            )
+
+            now = self._clock()
+            refresh_token = self._refresh_token_factory()
+            session = await self._uow.sessions.create(
+                user_id=user.id,
+                organization_id=None,
+                token_family_id=uuid4(),
+                refresh_token_digest=self.digest_refresh_token(refresh_token),
+                expires_at=now + self._refresh_token_lifetime,
+            )
+
+            access_token_expires_at = now + self._access_token_lifetime
+            access_token = self._access_token_codec.encode(
+                user_id=user.id,
+                session_id=session.id,
+                organization_id=None,
+                membership_id=None,
+                role=None,
+                expires_at=access_token_expires_at,
+            )
+
+            return AuthenticationResult(
+                user=user,
+                organization=None,
+                membership=None,
+                session=session,
+                access_token=access_token,
+                refresh_token=refresh_token,
+                access_token_expires_at=access_token_expires_at,
             )
 
     async def login(self, *, email: str, password: str) -> AuthenticationResult:
@@ -127,7 +170,6 @@ class AuthenticationService:
 
         Raises:
             InvalidCredentialsError: If the credentials are invalid or the user is disabled.
-            NoActiveMembershipError: If the user has no active organization membership.
         """
         async with self._uow:
             user = await self._uow.users.find_by_email(email)
@@ -138,28 +180,31 @@ class AuthenticationService:
             if not self._password_hasher.verify(password, user.password_hash):
                 raise InvalidCredentialsError()
 
+            await self._uow.set_user_context(user.id)
             memberships = list(await self._uow.memberships.list_for_user(user.id))
-            membership, organization = await self._select_context(user.id, memberships)
+            context = await self._select_context(user.id, memberships)
+            membership, organization = context if context is not None else (None, None)
 
             now = self._clock()
             refresh_token = self._refresh_token_factory()
             session = await self._uow.sessions.create(
                 user_id=user.id,
-                organization_id=organization.id,
+                organization_id=organization.id if organization is not None else None,
                 token_family_id=uuid4(),
                 refresh_token_digest=self.digest_refresh_token(refresh_token),
                 expires_at=now + self._refresh_token_lifetime,
             )
 
-            await self._uow.preferences.record_use(user.id, organization.id, now)
+            if organization is not None:
+                await self._uow.preferences.record_use(user.id, organization.id, now)
 
             access_token_expires_at = now + self._access_token_lifetime
             access_token = self._access_token_codec.encode(
                 user_id=user.id,
                 session_id=session.id,
-                organization_id=membership.organization_id,
-                membership_id=membership.id,
-                role=membership.role,
+                organization_id=membership.organization_id if membership is not None else None,
+                membership_id=membership.id if membership is not None else None,
+                role=membership.role if membership is not None else None,
                 expires_at=access_token_expires_at,
             )
 
@@ -196,6 +241,7 @@ class AuthenticationService:
             now = self._clock()
 
             if session.revoked_at is not None:
+                # A reused refresh token may be stolen. Revoke its replacements too.
                 await self._uow.sessions.revoke_family(session.token_family_id, now)
             else:
                 if session.expires_at <= now:
@@ -205,31 +251,41 @@ class AuthenticationService:
                 if user is None:
                     raise InvalidRefreshTokenError()
 
-                context = await self._get_active_context(user, session.current_organization_id)
-                if context is None:
+                if user.status != 'active':
                     raise InvalidRefreshTokenError()
 
-                membership, organization = context
+                await self._uow.set_user_context(user.id)
+                context = (
+                    await self._get_active_context(user, session.current_organization_id)
+                    if session.current_organization_id is not None
+                    else None
+                )
+
+                if session.current_organization_id is not None and context is None:
+                    raise InvalidRefreshTokenError()
+
+                membership, organization = context if context is not None else (None, None)
 
                 replacement_refresh_token = self._refresh_token_factory()
                 replacement = await self._uow.sessions.create(
                     user_id=session.user_id,
-                    organization_id=organization.id,
+                    organization_id=organization.id if organization is not None else None,
                     token_family_id=session.token_family_id,
                     refresh_token_digest=self.digest_refresh_token(replacement_refresh_token),
                     expires_at=now + self._refresh_token_lifetime,
                 )
 
                 await self._uow.sessions.rotate(session.id, replacement.id, now)
-                await self._uow.preferences.record_use(user.id, organization.id, now)
+                if organization is not None:
+                    await self._uow.preferences.record_use(user.id, organization.id, now)
 
                 access_token_expires_at = now + self._access_token_lifetime
                 access_token = self._access_token_codec.encode(
                     user_id=user.id,
                     session_id=replacement.id,
-                    organization_id=membership.organization_id,
-                    membership_id=membership.id,
-                    role=membership.role,
+                    organization_id=membership.organization_id if membership is not None else None,
+                    membership_id=membership.id if membership is not None else None,
+                    role=membership.role if membership is not None else None,
                     expires_at=access_token_expires_at,
                 )
 
@@ -256,11 +312,13 @@ class AuthenticationService:
             AuthSessionNotFoundError: If the session does not belong to the user.
         """
         async with self._uow:
+            await self._uow.set_user_context(user_id)
             session = await self._uow.sessions.get(session_id)
 
             if session is None or session.user_id != user_id:
                 raise AuthSessionNotFoundError(session_id)
 
+            # A rotated session still identifies its active replacement by family.
             await self._uow.sessions.revoke_family(session.token_family_id, self._clock())
 
     async def validate_access_token(self, access_token: str) -> Principal:
@@ -277,6 +335,7 @@ class AuthenticationService:
         """
         principal = self._access_token_codec.decode(access_token)
 
+        # A valid signature cannot reveal logout or later authorization changes.
         async with self._uow:
             session = await self._uow.sessions.get(principal.session_id)
 
@@ -290,6 +349,16 @@ class AuthenticationService:
                 raise InvalidAccessTokenError()
 
             user = await self._uow.users.get(principal.user_id)
+            if user is None or user.status != 'active':
+                raise InvalidAccessTokenError()
+
+            if principal.organization_id is None:
+                if principal.membership_id is not None or principal.role is not None:
+                    raise InvalidAccessTokenError()
+
+                return principal
+
+            await self._uow.set_user_context(user.id)
             context = await self._get_active_context(user, principal.organization_id)
 
             if context is None:
@@ -318,7 +387,7 @@ class AuthenticationService:
         self,
         user_id: UUID,
         memberships: Sequence[Membership],
-    ) -> tuple[Membership, Organization]:
+    ) -> tuple[Membership, Organization] | None:
         active_by_organization = {
             membership.organization_id: membership
             for membership in memberships
@@ -326,6 +395,7 @@ class AuthenticationService:
         }
 
         preferences = await self._uow.preferences.list_for_user(user_id)
+        # Explicit preference wins over recent use. Unavailable organizations are skipped.
         ranked_preferences = sorted(
             (
                 preference
@@ -359,8 +429,9 @@ class AuthenticationService:
                 organization_contexts.append((membership, organization))
 
         if not organization_contexts:
-            raise NoActiveMembershipError(user_id)
+            return None
 
+        # Use a stable default until the user has an organization preference.
         return min(
             organization_contexts,
             key=lambda context: (context[1].name.casefold(), str(context[1].id)),
@@ -415,6 +486,30 @@ class OrganizationContextService:
         self._access_token_lifetime = access_token_lifetime
         self._clock = clock or (lambda: datetime.now(UTC))
 
+    async def list_available(self, user_id: UUID) -> Sequence[tuple[Membership, Organization]]:
+        """List active organizations available for account context switching.
+
+        Args:
+            user_id: Authenticated user whose memberships are available.
+
+        Returns:
+            Active membership and organization pairs in display order.
+        """
+        async with self._uow:
+            await self._uow.set_user_context(user_id)
+            memberships = await self._uow.memberships.list_for_user(user_id)
+            available: list[tuple[Membership, Organization]] = []
+
+            for membership in memberships:
+                organization = await self._uow.organizations.get(membership.organization_id)
+                if organization is not None and organization.status == 'active':
+                    available.append((membership, organization))
+
+            return sorted(
+                available,
+                key=lambda context: (context[1].name.casefold(), str(context[1].id)),
+            )
+
     async def switch(
         self,
         *,
@@ -439,6 +534,7 @@ class OrganizationContextService:
             OrganizationNotFoundError: If the organization does not exist or is unavailable.
         """
         async with self._uow:
+            await self._uow.set_user_context(user_id)
             session = await self._uow.sessions.get(session_id)
 
             if session is None or session.user_id != user_id:
@@ -471,6 +567,254 @@ class OrganizationContextService:
             access_token = self._access_token_codec.encode(
                 user_id=user_id,
                 session_id=updated_session.id,
+                organization_id=organization.id,
+                membership_id=membership.id,
+                role=membership.role,
+                expires_at=access_token_expires_at,
+            )
+
+            return OrganizationContextResult(
+                session=updated_session,
+                organization=organization,
+                membership=membership,
+                access_token=access_token,
+                access_token_expires_at=access_token_expires_at,
+            )
+
+
+class OnboardingService:
+    """Create an initial organization or join one through a single-use code."""
+
+    def __init__(
+        self,
+        *,
+        uow: IdentityUnitOfWork,
+        access_token_codec: AccessTokenCodec,
+        access_token_lifetime: timedelta,
+        invitation_lifetime: timedelta = timedelta(days=7),
+        clock: Callable[[], datetime] | None = None,
+        invitation_code_factory: Callable[[], str] | None = None,
+    ) -> None:
+        """Initialize organization setup workflows.
+
+        Args:
+            uow: Transaction boundary for identity persistence.
+            access_token_codec: Access-token encoding mechanism.
+            access_token_lifetime: Lifetime of issued access tokens.
+            invitation_lifetime: Lifetime of manually shared invitation codes.
+            clock: Time source for expiry and audit timestamps.
+            invitation_code_factory: Source of unpredictable invitation codes.
+
+        Raises:
+            ValueError: If either lifetime is non-positive.
+        """
+        if access_token_lifetime <= timedelta(0):
+            raise ValueError('Access-token lifetime must be positive.')
+
+        if invitation_lifetime <= timedelta(0):
+            raise ValueError('Invitation lifetime must be positive.')
+
+        self._uow = uow
+        self._access_token_codec = access_token_codec
+        self._access_token_lifetime = access_token_lifetime
+        self._invitation_lifetime = invitation_lifetime
+        self._clock = clock or (lambda: datetime.now(UTC))
+        self._invitation_code_factory = invitation_code_factory or (
+            lambda: base64.b32encode(secrets.token_bytes(5)).decode('ascii')
+        )
+
+    async def create_organization(
+        self, *, user_id: UUID, session_id: UUID, name: str
+    ) -> OrganizationContextResult:
+        """Create an organization and grant its creator administrator access.
+
+        Args:
+            user_id: Authenticated account completing setup.
+            session_id: Active session to switch to the new organization.
+            name: Organization display name.
+
+        Returns:
+            Active organization context and replacement access token.
+
+        Raises:
+            AuthSessionNotFoundError: If the session is not owned by the user.
+            AuthSessionInactiveError: If the session has expired or been revoked.
+        """
+        async with self._uow:
+            session = await self._uow.sessions.get(session_id)
+            if session is None or session.user_id != user_id:
+                raise AuthSessionNotFoundError(session_id)
+
+            now = self._clock()
+            if session.revoked_at is not None or session.expires_at <= now:
+                raise AuthSessionInactiveError(session_id)
+
+            organization = await self._uow.organizations.create(name=name)
+            await self._uow.set_organization_context(organization.id)
+            membership = await self._uow.memberships.create(
+                user_id=user_id,
+                organization_id=organization.id,
+                role=MembershipRole.ADMINISTRATOR.value,
+            )
+            updated_session = await self._uow.sessions.change_organization(
+                session_id, organization.id
+            )
+            await self._uow.preferences.record_use(user_id, organization.id, now)
+            await self._uow.audit_events.create(
+                organization_id=organization.id,
+                actor_user_id=user_id,
+                action='organization.create',
+                resource_type='organization',
+                resource_id=organization.id,
+                occurred_at=now,
+                details={},
+            )
+
+            access_token_expires_at = now + self._access_token_lifetime
+            access_token = self._access_token_codec.encode(
+                user_id=user_id,
+                session_id=session_id,
+                organization_id=organization.id,
+                membership_id=membership.id,
+                role=membership.role,
+                expires_at=access_token_expires_at,
+            )
+
+            return OrganizationContextResult(
+                session=updated_session,
+                organization=organization,
+                membership=membership,
+                access_token=access_token,
+                access_token_expires_at=access_token_expires_at,
+            )
+
+    async def issue_invitation(
+        self, *, actor_user_id: UUID, organization_id: UUID, role: MembershipRole
+    ) -> InvitationIssueResult:
+        """Issue a code that an administrator can share manually.
+
+        Args:
+            actor_user_id: Administrator issuing the code.
+            organization_id: Organization to join.
+            role: Membership role granted to the redeemer.
+
+        Returns:
+            Invitation metadata and its one-time visible code.
+
+        Raises:
+            MembershipPermissionDeniedError: If the actor is not an active administrator.
+            OrganizationNotFoundError: If the organization is unavailable.
+        """
+        async with self._uow:
+            await self._uow.set_user_context(actor_user_id)
+            actor = await self._uow.memberships.get_for_user_and_organization(
+                actor_user_id, organization_id
+            )
+            if (
+                actor is None
+                or actor.status != MembershipStatus.ACTIVE
+                or actor.role != MembershipRole.ADMINISTRATOR
+            ):
+                raise MembershipPermissionDeniedError(organization_id)
+
+            organization = await self._uow.organizations.get(organization_id)
+            if organization is None or organization.status != 'active':
+                raise OrganizationNotFoundError(organization_id)
+
+            await self._uow.set_organization_context(organization_id)
+            code = self._invitation_code_factory()
+            expires_at = self._clock() + self._invitation_lifetime
+            invitation = await self._uow.invitations.create(
+                organization_id=organization_id,
+                code_digest=sha256(code.encode('ascii')).hexdigest(),
+                role=role.value,
+                created_by_user_id=actor_user_id,
+                expires_at=expires_at,
+            )
+            await self._uow.audit_events.create(
+                organization_id=organization_id,
+                actor_user_id=actor_user_id,
+                action='organization_invitation.create',
+                resource_type='organization_invitation',
+                resource_id=invitation.id,
+                occurred_at=self._clock(),
+                details={'role': role.value},
+            )
+
+            return InvitationIssueResult(
+                code=code,
+                organization_id=organization_id,
+                role=role,
+                expires_at=expires_at,
+            )
+
+    async def join_organization(
+        self, *, user_id: UUID, session_id: UUID, code: str
+    ) -> OrganizationContextResult:
+        """Redeem a code and activate the new organization in one transaction.
+
+        Args:
+            user_id: Authenticated account accepting the invitation.
+            session_id: Active session to switch to the joined organization.
+            code: Administrator-provided invitation code.
+
+        Returns:
+            Active organization context and replacement access token.
+
+        Raises:
+            AuthSessionNotFoundError: If the session is not owned by the user.
+            AuthSessionInactiveError: If the session has expired or been revoked.
+            InvalidInvitationCodeError: If the code is invalid or unavailable.
+        """
+        normalized_code = re.sub(r'[ -]', '', code.upper())
+        if re.fullmatch(r'[A-Z2-7]{8}', normalized_code) is None:
+            raise InvalidInvitationCodeError()
+
+        async with self._uow:
+            session = await self._uow.sessions.get(session_id)
+            if session is None or session.user_id != user_id:
+                raise AuthSessionNotFoundError(session_id)
+
+            now = self._clock()
+            if session.revoked_at is not None or session.expires_at <= now:
+                raise AuthSessionInactiveError(session_id)
+
+            code_digest = sha256(normalized_code.encode('ascii')).hexdigest()
+            await self._uow.set_invitation_digest(code_digest)
+            invitation = await self._uow.invitations.redeem(
+                code_digest=code_digest, user_id=user_id, redeemed_at=now
+            )
+            if invitation is None:
+                raise InvalidInvitationCodeError()
+
+            organization = await self._uow.organizations.get(invitation.organization_id)
+            if organization is None or organization.status != 'active':
+                raise InvalidInvitationCodeError()
+
+            await self._uow.set_organization_context(organization.id)
+            membership = await self._uow.memberships.create(
+                user_id=user_id,
+                organization_id=organization.id,
+                role=invitation.role,
+            )
+            updated_session = await self._uow.sessions.change_organization(
+                session_id, organization.id
+            )
+            await self._uow.preferences.record_use(user_id, organization.id, now)
+            await self._uow.audit_events.create(
+                organization_id=organization.id,
+                actor_user_id=user_id,
+                action='membership.join',
+                resource_type='membership',
+                resource_id=membership.id,
+                occurred_at=now,
+                details={'invitation_id': str(invitation.id)},
+            )
+
+            access_token_expires_at = now + self._access_token_lifetime
+            access_token = self._access_token_codec.encode(
+                user_id=user_id,
+                session_id=session_id,
                 organization_id=organization.id,
                 membership_id=membership.id,
                 role=membership.role,
@@ -622,6 +966,7 @@ class MembershipService:
     ) -> Membership:
         """Authorize and atomically persist one membership transition and its audit event."""
         async with self._uow:
+            await self._uow.set_organization_context(organization_id)
             actor = await self._uow.memberships.get_for_user_and_organization(
                 actor_user_id, organization_id
             )
@@ -653,6 +998,7 @@ class MembershipService:
             now = self._clock()
 
             if action in {'suspend', 'revoke'}:
+                # Existing sessions must not retain access after membership is removed.
                 await self._uow.sessions.revoke_for_user_and_organization(
                     target.user_id, organization_id, now
                 )

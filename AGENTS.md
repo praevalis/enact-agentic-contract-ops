@@ -57,6 +57,11 @@ The application is a modular monolith. A worker, additional deployable service, 
 - Uploaded documents must remain behind an S3-compatible object-storage boundary; MinIO is the local implementation.
 - Keep API endpoints versioned under `/api/v1`. The web client's configured base URL stops at `/api` so callers choose the API version.
 
+## Code comments
+
+- Add comments for non-obvious decisions, invariants, security rules, and distinct complex steps. Do not narrate straightforward operations.
+- Keep comments concise and functional. Avoid em dashes and excessive punctuation such as colons and semicolons.
+
 ## Validation
 
 Run checks proportionate to the files changed. The repository-wide baseline is:

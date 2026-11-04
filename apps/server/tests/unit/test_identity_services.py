@@ -12,13 +12,16 @@ from enact.identity.entities import (
     AuthSession,
     Membership,
     Organization,
+    OrganizationInvitation,
     User,
     UserOrganizationPreference,
 )
+from enact.identity.enums import MembershipRole
 from enact.identity.errors import (
     AuthSessionNotFoundError,
     InvalidAccessTokenError,
     InvalidCredentialsError,
+    InvalidInvitationCodeError,
     InvalidRefreshTokenError,
 )
 from enact.identity.repositories import (
@@ -28,7 +31,11 @@ from enact.identity.repositories import (
     UserOrganizationPreferenceRepository,
     UserRepository,
 )
-from enact.identity.services import AuthenticationService, OrganizationContextService
+from enact.identity.services import (
+    AuthenticationService,
+    OnboardingService,
+    OrganizationContextService,
+)
 from enact.identity.unit_of_work import IdentityUnitOfWork
 
 
@@ -72,6 +79,11 @@ class _Memberships:
             None,
         )
 
+    async def create(self, *, user_id: UUID, organization_id: UUID, role: str) -> Membership:
+        membership = Membership(uuid4(), user_id, organization_id, role, 'active')
+        self.memberships = (*self.memberships, membership)
+        return membership
+
 
 class _Organizations:
     """In-memory organization persistence for service tests."""
@@ -81,6 +93,11 @@ class _Organizations:
 
     async def get(self, organization_id: UUID) -> Organization | None:
         return self.organizations.get(organization_id)
+
+    async def create(self, *, name: str) -> Organization:
+        organization = Organization(uuid4(), name, 'active')
+        self.organizations[organization.id] = organization
+        return organization
 
 
 class _Preferences:
@@ -141,7 +158,7 @@ class _Sessions:
         self,
         *,
         user_id: UUID,
-        organization_id: UUID,
+        organization_id: UUID | None,
         token_family_id: UUID,
         refresh_token_digest: str,
         expires_at: datetime,
@@ -231,6 +248,72 @@ class _Sessions:
                 await self.revoke(session.id, revoked_at)
 
 
+class _Invitations:
+    """In-memory single-use invitation persistence for service tests."""
+
+    def __init__(self) -> None:
+        self.invitations: list[OrganizationInvitation] = []
+
+    async def create(
+        self,
+        *,
+        organization_id: UUID,
+        code_digest: str,
+        role: str,
+        created_by_user_id: UUID,
+        expires_at: datetime,
+    ) -> OrganizationInvitation:
+        invitation = OrganizationInvitation(
+            uuid4(), organization_id, code_digest, role, created_by_user_id, expires_at, None, None
+        )
+        self.invitations.append(invitation)
+        return invitation
+
+    async def redeem(
+        self, *, code_digest: str, user_id: UUID, redeemed_at: datetime
+    ) -> OrganizationInvitation | None:
+        for invitation in self.invitations:
+            if (
+                invitation.code_digest == code_digest
+                and invitation.redeemed_at is None
+                and invitation.expires_at > redeemed_at
+            ):
+                redeemed = OrganizationInvitation(
+                    invitation.id,
+                    invitation.organization_id,
+                    invitation.code_digest,
+                    invitation.role,
+                    invitation.created_by_user_id,
+                    invitation.expires_at,
+                    user_id,
+                    redeemed_at,
+                )
+                self.invitations[self.invitations.index(invitation)] = redeemed
+                return redeemed
+
+        return None
+
+
+class _AuditEvents:
+    """Record audit actions issued by onboarding workflows."""
+
+    def __init__(self) -> None:
+        self.actions: list[str] = []
+
+    async def create(
+        self,
+        *,
+        organization_id: UUID,
+        actor_user_id: UUID,
+        action: str,
+        resource_type: str,
+        resource_id: UUID,
+        occurred_at: datetime,
+        details: dict[str, object] | None = None,
+    ) -> None:
+        self.actions.append(action)
+
+
 class _UnitOfWork:
     """In-memory identity unit of work for service tests."""
 
@@ -248,8 +331,19 @@ class _UnitOfWork:
         self.organizations = cast(OrganizationRepository, organizations)
         self.preferences = cast(UserOrganizationPreferenceRepository, preferences)
         self.sessions = cast(AuthSessionRepository, sessions)
+        self.invitations = _Invitations()
+        self.audit_events = _AuditEvents()
         self.commit_count = 0
         self.rollback_count = 0
+
+    async def set_user_context(self, user_id: UUID) -> None:
+        self.user_context = user_id
+
+    async def set_organization_context(self, organization_id: UUID) -> None:
+        self.organization_context = organization_id
+
+    async def set_invitation_digest(self, code_digest: str) -> None:
+        self.invitation_digest = code_digest
 
     async def __aenter__(self) -> '_UnitOfWork':
         return self
@@ -306,7 +400,14 @@ def _service_fixture(
     )
     now = now or datetime(2026, 1, 1, tzinfo=UTC)
     codec = AccessTokenCodec('test-secret-with-at-least-32-bytes!!')
-    refresh_tokens = iter(('initial-refresh-token', 'replacement-refresh-token'))
+    refresh_tokens = iter(
+        (
+            'initial-refresh-token',
+            'replacement-refresh-token',
+            'third-refresh-token',
+            'fourth-refresh-token',
+        )
+    )
     authentication = AuthenticationService(
         uow=cast(IdentityUnitOfWork, uow),
         password_hasher=hasher,
@@ -350,6 +451,7 @@ class TestAuthenticationService:
 
         result = await service.login(email=user.email, password='correct-password')
 
+        assert result.organization is not None
         assert result.user.id == user.id
         assert result.organization.id == organization.id
         assert result.access_token
@@ -402,6 +504,7 @@ class TestAuthenticationService:
 
         result = await service.login(email=user.email, password='correct-password')
 
+        assert result.organization is not None
         assert result.organization.id == recent.id
 
     async def test_login_uses_alphabetical_fallback_without_history(self) -> None:
@@ -422,6 +525,7 @@ class TestAuthenticationService:
 
         result = await service.login(email=user.email, password='correct-password')
 
+        assert result.organization is not None
         assert result.organization.id == alphabetical_first.id
 
     async def test_refresh_rotates_session(self) -> None:
@@ -496,6 +600,7 @@ class TestAuthenticationService:
         """A signed token cannot retain access after its membership is suspended."""
         service, _, uow, _, _, user, organization = _service_fixture(datetime.now(UTC))
         login = await service.login(email=user.email, password='correct-password')
+        assert login.membership is not None
         uow.memberships = cast(
             MembershipRepository,
             _Memberships(
@@ -523,6 +628,25 @@ class TestAuthenticationService:
         assert uow.commit_count == 0
         assert uow.rollback_count == 1
 
+    async def test_register_refresh_and_login_without_membership(self) -> None:
+        """Resume organization setup from an account-only session after a later login."""
+        service, _, uow, _, _, _, _ = _service_fixture(datetime.now(UTC))
+
+        registered = await service.register(
+            email='new@example.com', password='long-password', display_name='New User'
+        )
+        principal = await service.validate_access_token(registered.access_token)
+        refreshed = await service.refresh(registered.refresh_token)
+        login = await service.login(email='new@example.com', password='long-password')
+
+        assert registered.organization is None
+        assert registered.membership is None
+        assert registered.session.current_organization_id is None
+        assert principal.organization_id is None
+        assert refreshed.organization is None
+        assert login.organization is None
+        assert uow.commit_count == 4
+
 
 @pytest.mark.unit
 @pytest.mark.asyncio
@@ -544,3 +668,112 @@ class TestOrganizationContextService:
         assert result.access_token
         assert sessions.sessions[0].current_organization_id == organization.id
         assert uow.commit_count == 2
+
+    async def test_list_available_excludes_suspended_organizations(self) -> None:
+        """Show only active organization contexts in the switcher."""
+        _, context, uow, _, _, user, organization = _service_fixture()
+        suspended = Organization(uuid4(), 'Unavailable', 'suspended')
+        uow.organizations = cast(OrganizationRepository, _Organizations(organization, suspended))
+        uow.memberships = cast(
+            MembershipRepository,
+            _Memberships(
+                Membership(uuid4(), user.id, organization.id, 'administrator', 'active'),
+                Membership(uuid4(), user.id, suspended.id, 'auditor', 'active'),
+            ),
+        )
+
+        available = await context.list_available(user.id)
+
+        assert [item[1].id for item in available] == [organization.id]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+class TestOnboardingService:
+    """Verify account setup and invitation workflows."""
+
+    async def test_create_organization_grants_creator_administrator(self) -> None:
+        """Activate an account-only session in a new organization."""
+        authentication, _, uow, _, _, _, _ = _service_fixture(datetime.now(UTC))
+        registered = await authentication.register(
+            email='creator@example.com', password='long-password', display_name='Creator'
+        )
+        onboarding = OnboardingService(
+            uow=cast(IdentityUnitOfWork, uow),
+            access_token_codec=AccessTokenCodec('test-secret-with-at-least-32-bytes!!'),
+            access_token_lifetime=timedelta(minutes=5),
+        )
+
+        result = await onboarding.create_organization(
+            user_id=registered.user.id,
+            session_id=registered.session.id,
+            name='New Organization',
+        )
+
+        assert result.organization.name == 'New Organization'
+        assert result.membership.role == MembershipRole.ADMINISTRATOR
+        assert result.session.current_organization_id == result.organization.id
+        assert uow.organization_context == result.organization.id
+        assert uow.audit_events.actions == ['organization.create']
+
+        second = await onboarding.create_organization(
+            user_id=registered.user.id,
+            session_id=registered.session.id,
+            name='Second Organization',
+        )
+
+        assert second.organization.id != result.organization.id
+        assert second.session.current_organization_id == second.organization.id
+        assert second.membership.role == MembershipRole.ADMINISTRATOR
+
+    async def test_invitation_is_single_use_and_grants_selected_role(self) -> None:
+        """Issue a code, join once, and reject a second redemption."""
+        authentication, _, uow, _, _, administrator, organization = _service_fixture(
+            datetime.now(UTC)
+        )
+        onboarding = OnboardingService(
+            uow=cast(IdentityUnitOfWork, uow),
+            access_token_codec=AccessTokenCodec('test-secret-with-at-least-32-bytes!!'),
+            access_token_lifetime=timedelta(minutes=5),
+        )
+
+        issued = await onboarding.issue_invitation(
+            actor_user_id=administrator.id,
+            organization_id=organization.id,
+            role=MembershipRole.AUDITOR,
+        )
+        assert len(issued.code) == 8
+
+        invited = await authentication.register(
+            email='invited@example.com', password='long-password', display_name='Invited'
+        )
+        existing = await onboarding.create_organization(
+            user_id=invited.user.id,
+            session_id=invited.session.id,
+            name='Existing Organization',
+        )
+        joined = await onboarding.join_organization(
+            user_id=invited.user.id,
+            session_id=invited.session.id,
+            code=issued.code.lower(),
+        )
+
+        assert joined.membership.role == MembershipRole.AUDITOR
+        assert joined.organization.id == organization.id
+        assert joined.session.current_organization_id == organization.id
+        assert existing.organization.id != joined.organization.id
+        assert uow.audit_events.actions == [
+            'organization_invitation.create',
+            'organization.create',
+            'membership.join',
+        ]
+
+        another = await authentication.register(
+            email='another@example.com', password='long-password', display_name='Another'
+        )
+        with pytest.raises(InvalidInvitationCodeError):
+            await onboarding.join_organization(
+                user_id=another.user.id,
+                session_id=another.session.id,
+                code=issued.code,
+            )

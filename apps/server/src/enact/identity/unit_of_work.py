@@ -2,12 +2,14 @@
 
 from types import TracebackType
 from typing import Protocol, Self
+from uuid import UUID
 
 from enact.audit import AuditEventRepository
 
 from .repositories import (
     AuthSessionRepository,
     MembershipRepository,
+    OrganizationInvitationRepository,
     OrganizationRepository,
     UserOrganizationPreferenceRepository,
     UserRepository,
@@ -23,6 +25,19 @@ class IdentityUnitOfWork(Protocol):
     preferences: UserOrganizationPreferenceRepository
     sessions: AuthSessionRepository
     audit_events: AuditEventRepository
+    invitations: OrganizationInvitationRepository
+
+    async def set_user_context(self, user_id: UUID) -> None:
+        """Scope user discovery queries to an authenticated user."""
+        ...
+
+    async def set_organization_context(self, organization_id: UUID) -> None:
+        """Scope tenant-owned mutations to an authorized organization."""
+        ...
+
+    async def set_invitation_digest(self, code_digest: str) -> None:
+        """Permit lookup of only the invitation matching a presented code."""
+        ...
 
     async def __aenter__(self) -> Self:
         """Begin a unit-of-work scope."""

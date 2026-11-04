@@ -3,6 +3,7 @@
 from .audit_events import SqlAlchemyAuditEventRepository
 from .auth_sessions import SqlAlchemyAuthSessionRepository
 from .memberships import SqlAlchemyMembershipRepository
+from .organization_invitations import SqlAlchemyOrganizationInvitationRepository
 from .organizations import SqlAlchemyOrganizationRepository
 from .preferences import SqlAlchemyUserOrganizationPreferenceRepository
 from .users import SqlAlchemyUserRepository
@@ -12,6 +13,7 @@ __all__ = [
     'SqlAlchemyAuditEventRepository',
     'SqlAlchemyMembershipRepository',
     'SqlAlchemyOrganizationRepository',
+    'SqlAlchemyOrganizationInvitationRepository',
     'SqlAlchemyUserOrganizationPreferenceRepository',
     'SqlAlchemyUserRepository',
 ]

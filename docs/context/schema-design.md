@@ -201,6 +201,13 @@ session state are persisted in `auth_sessions`; raw refresh tokens are never sto
 Login resolves an active organization automatically. The preferred order is an explicit preferred
 organization, the most recently used active organization, and then a deterministic active membership
 when no usable history exists. The user can switch organizations explicitly without logging in again.
+Registration creates an account-only session. Login also creates one when the user has no active
+membership, so interrupted organization setup resumes after a later login. Account-only access
+tokens authorize account and onboarding operations only. Creating an organization grants its creator
+an active administrator membership and activates that organization in the session. A user can instead
+join an existing organization with a manually shared eight-character invitation code from an administrator.
+Creating or joining another organization is also available to users with an active organization
+context, and switches that session to the new organization.
 The active organization is stored on the session and included in the access-token context, but every
 request must revalidate active membership before setting transaction-local RLS context.
 
@@ -208,13 +215,25 @@ request must revalidate active membership before setting transaction-local RLS c
 
 Represents a revocable authentication session and refresh-token family. It is global
 control-plane data because authentication begins before an organization is selected. It contains
-`user_id`, `current_organization_id`, `refresh_token_digest`, `token_family_id`, creation and expiry
+`user_id`, nullable `current_organization_id`, `refresh_token_digest`, `token_family_id`, creation and expiry
 timestamps, revocation metadata, and an optional replacement-session reference.
 Refresh-token rotation revokes the presented session and creates its replacement. Reuse of a
 revoked token revokes the complete token family. Logout verifies that the session belongs to the
 authenticated user and revokes its token family, including any active replacement. Protected
 requests validate the signed access token against current session, user, organization, and
 membership state so logout and authorization changes take effect immediately.
+The refresh token is returned to the browser only in an HttpOnly cookie. Refresh and logout require
+the configured browser Origin. A session without an organization can refresh until its expiry;
+refresh expiry requires login again.
+
+### `organization_invitations`
+
+Stores tenant-owned, single-use invitations for joining an existing organization. Each row has an
+organization, selected membership role, creator, expiry, optional redeemer and redemption time, and
+a unique SHA-256 digest of a random 128-bit code. The raw code is shown only when issued and is
+shared manually by the administrator. Redemption atomically claims an unexpired, unused row in the
+same transaction as membership creation and session activation. RLS permits tenant-scoped
+administration and a narrow lookup and redemption policy matching the presented code digest.
 
 ### `user_organization_preferences`
 

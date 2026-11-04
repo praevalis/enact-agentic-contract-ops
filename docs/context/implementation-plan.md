@@ -52,6 +52,12 @@ No BFF, graph database, vector database, message broker, domain microservices, o
 Owns local authentication, Argon2id credential hashing, access-token and refresh-session
 workflows, organization context, membership authorization, and role-based access policy. Identity
 application contracts remain independent from SQLAlchemy persistence mappings.
+Registration creates an account-only session so organization setup can resume after a later login.
+An account-only token cannot authorize tenant operations. Setup creates an organization with an
+administrator membership or redeems a manually shared, single-use invitation code. Users can create
+or join additional organizations from an existing organization session. Browser refresh tokens use
+HttpOnly cookies; access tokens are short lived and validated against current
+session and membership state.
 ### Cases
 
 Owns initial activation and amendment lifecycle, lineage, active document bundle, accepted intent, compilation attempts, concurrency version, and terminal or recoverable state.
