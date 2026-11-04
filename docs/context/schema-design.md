@@ -198,20 +198,23 @@ identity-provider integration are not part of the initial schema. The initial to
 short-lived signed access tokens and rotated opaque refresh tokens. Deterministic refresh-token digests and
 session state are persisted in `auth_sessions`; raw refresh tokens are never stored.
 
-Login resolves an active organization automatically. The preferred order is the session's last
-active organization, a persisted user organization preference, and then a deterministic active
-membership. The user can switch organizations explicitly without logging in again. The active
-organization is stored on the session and included in the access-token context, but every request
-must revalidate active membership before setting transaction-local RLS context.
+Login resolves an active organization automatically. The preferred order is an explicit preferred
+organization, the most recently used active organization, and then a deterministic active membership
+when no usable history exists. The user can switch organizations explicitly without logging in again.
+The active organization is stored on the session and included in the access-token context, but every
+request must revalidate active membership before setting transaction-local RLS context.
 
 ### `auth_sessions`
 
 Represents a revocable authentication session and refresh-token family. It is global
 control-plane data because authentication begins before an organization is selected. It contains
 `user_id`, `current_organization_id`, `refresh_token_digest`, `token_family_id`, creation and expiry
-timestamps, last-use metadata, revocation metadata, and an optional replacement-session reference.
+timestamps, revocation metadata, and an optional replacement-session reference.
 Refresh-token rotation revokes the presented session and creates its replacement. Reuse of a
-revoked token revokes the complete token family.
+revoked token revokes the complete token family. Logout verifies that the session belongs to the
+authenticated user and revokes its token family, including any active replacement. Protected
+requests validate the signed access token against current session, user, organization, and
+membership state so logout and authorization changes take effect immediately.
 
 ### `user_organization_preferences`
 
@@ -225,6 +228,14 @@ data and has one row per user and organization pair.
 Connects a global user to an organization and records their role and membership status. Roles
 support the deal desk, administrator, operations reviewer, and auditor responsibilities. A
 tenant-scoped uniqueness constraint prevents duplicate membership in one organization.
+Only active memberships authorize access. An administrator can suspend an active membership,
+pausing access while retaining its role, and resume a suspended membership with that role.
+An administrator can revoke an active or suspended membership. Revoked memberships cannot be
+resumed; regranting one requires an explicit administrator action that selects a role. Regrant
+restores the existing row because each user and organization pair is unique. Each transition
+creates an audit event. Suspending or revoking active access also revokes active authentication
+sessions in that organization. Authorization must revalidate membership and session status on
+each request so previously issued access tokens cannot outlive a membership change.
 
 ### `customers`
 

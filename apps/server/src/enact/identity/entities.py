@@ -56,6 +56,5 @@ class AuthSession:
     token_family_id: UUID
     refresh_token_digest: str
     expires_at: datetime
-    last_used_at: datetime | None
     revoked_at: datetime | None
     replaced_by_session_id: UUID | None

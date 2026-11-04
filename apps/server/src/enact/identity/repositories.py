@@ -158,19 +158,48 @@ class MembershipRepository(Protocol):
         """
         ...
 
-    async def suspend(self, membership_id: UUID) -> None:
+    async def suspend(self, membership_id: UUID) -> Membership:
         """Suspend a membership without deleting its history.
 
         Args:
             membership_id: Membership identifier to suspend.
+
+        Returns:
+            The suspended membership.
         """
         ...
 
-    async def revoke(self, membership_id: UUID) -> None:
+    async def resume(self, membership_id: UUID) -> Membership:
+        """Resume a suspended membership with its retained role.
+
+        Args:
+            membership_id: Membership identifier to resume.
+
+        Returns:
+            The active membership.
+        """
+        ...
+
+    async def revoke(self, membership_id: UUID) -> Membership:
         """Revoke a membership without deleting its history.
 
         Args:
             membership_id: Membership identifier to revoke.
+
+        Returns:
+            The revoked membership.
+        """
+        ...
+
+    async def regrant(self, membership_id: UUID, role: str) -> Membership:
+        """Restore a revoked membership with an explicitly chosen role.
+
+        Args:
+            membership_id: Membership identifier to regrant.
+            role: Role selected for the restored access.
+
+        Returns:
+            The active membership.
         """
         ...
 
@@ -357,6 +386,22 @@ class AuthSessionRepository(Protocol):
         """
         ...
 
+    async def change_organization(
+        self,
+        session_id: UUID,
+        organization_id: UUID,
+    ) -> AuthSession:
+        """Change the current organization stored on an authentication session.
+
+        Args:
+            session_id: Session whose organization context should change.
+            organization_id: New current organization identifier.
+
+        Returns:
+            The updated authentication session.
+        """
+        ...
+
     async def revoke(self, session_id: UUID, revoked_at: datetime) -> None:
         """Revoke one authentication session.
 
@@ -371,6 +416,21 @@ class AuthSessionRepository(Protocol):
 
         Args:
             token_family_id: Token family whose sessions should be revoked.
+            revoked_at: Timestamp of revocation.
+        """
+        ...
+
+    async def revoke_for_user_and_organization(
+        self,
+        user_id: UUID,
+        organization_id: UUID,
+        revoked_at: datetime,
+    ) -> None:
+        """Revoke active sessions currently scoped to an organization.
+
+        Args:
+            user_id: User losing organization access.
+            organization_id: Organization being removed from the user's context.
             revoked_at: Timestamp of revocation.
         """
         ...

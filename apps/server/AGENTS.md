@@ -17,6 +17,10 @@ This file extends the repository-level `AGENTS.md` for work under `apps/server`.
 
 - Ruff is authoritative for linting, import sorting, and formatting.
 - Use single quotes and a maximum line length of 100 characters.
+- Separate logical steps within a function or control-flow block with blank lines, including
+  validation, data access, mutation, and result construction. Separate consecutive guards and
+  a guard from the work that follows it when this makes the flow easier to scan. Ruff formatting
+  alone does not establish these boundaries.
 - Use Google-style docstrings.
 - Every public method must have a complete docstring with `Args`, `Returns`, and `Raises` sections whenever those sections apply.
 - Private methods may use a one-line descriptive docstring. Use a complete Google-style docstring when their behavior, invariants, side effects, or failure modes need explanation.
@@ -37,6 +41,12 @@ This file extends the repository-level `AGENTS.md` for work under `apps/server`.
 - Apply dependency inversion through typed `Protocol` interfaces.
 - Use `Protocol` for interfaces; do not use `ABC` or abstract base classes for interface definitions.
 - Avoid marker interfaces, pass-through service classes, and abstractions with only one speculative consumer.
+- Keep one-off workflow orchestration in the method that owns it. Extract a private helper only
+  for reused behavior or one cohesive rule or decision; do not hide unrelated persistence,
+  preference updates, and result construction behind a result-building helper.
+- Do not extract a private helper that only forwards one call or constructs one value. Inline the
+  operation at its call site. Public methods may delegate when required by an agreed interface
+  boundary. Review new helpers against these rules before requesting code review.
 
 ## Schemas and errors
 

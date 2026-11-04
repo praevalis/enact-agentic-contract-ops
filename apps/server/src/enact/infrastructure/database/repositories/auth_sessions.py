@@ -108,10 +108,33 @@ class SqlAlchemyAuthSessionRepository:
         if model is None:
             raise AuthSessionNotFoundError(session_id)
 
-        model.last_used_at = used_at
         model.revoked_at = used_at
         model.replaced_by_session_id = replacement_session_id
         await flush_session(self._session, constraint_errors=_CONSTRAINT_ERRORS)
+
+    async def change_organization(
+        self,
+        session_id: UUID,
+        organization_id: UUID,
+    ) -> AuthSession:
+        """Change the current organization stored on an authentication session.
+
+        Args:
+            session_id: Session whose organization context should change.
+            organization_id: New current organization identifier.
+
+        Returns:
+            The updated authentication session.
+
+        Raises:
+            AuthSessionNotFoundError: If the session does not exist.
+        """
+        model = await self._session.get(AuthSessionModel, session_id)
+        if model is None:
+            raise AuthSessionNotFoundError(session_id)
+        model.current_organization_id = organization_id
+        await flush_session(self._session, constraint_errors=_CONSTRAINT_ERRORS)
+        return to_auth_session(model)
 
     async def revoke(self, session_id: UUID, revoked_at: datetime) -> None:
         """Revoke one authentication session.
@@ -148,6 +171,31 @@ class SqlAlchemyAuthSessionRepository:
         )
         await flush_session(self._session, constraint_errors=_CONSTRAINT_ERRORS)
 
+    async def revoke_for_user_and_organization(
+        self,
+        user_id: UUID,
+        organization_id: UUID,
+        revoked_at: datetime,
+    ) -> None:
+        """Revoke a user's active sessions scoped to one organization.
+
+        Args:
+            user_id: User losing organization access.
+            organization_id: Organization being removed from the user's context.
+            revoked_at: Timestamp of revocation.
+        """
+        await self._session.execute(
+            update(AuthSessionModel)
+            .where(
+                AuthSessionModel.user_id == user_id,
+                AuthSessionModel.current_organization_id == organization_id,
+                AuthSessionModel.revoked_at.is_(None),
+            )
+            .values(revoked_at=revoked_at)
+        )
+
+        await flush_session(self._session, constraint_errors=_CONSTRAINT_ERRORS)
+
     async def list_active_for_user(self, user_id: UUID) -> Sequence[AuthSession]:
         """List active sessions for account-management operations.
 
@@ -177,7 +225,6 @@ def to_auth_session(model: AuthSessionModel) -> AuthSession:
         token_family_id=model.token_family_id,
         refresh_token_digest=model.refresh_token_digest,
         expires_at=model.expires_at,
-        last_used_at=model.last_used_at,
         revoked_at=model.revoked_at,
         replaced_by_session_id=model.replaced_by_session_id,
     )

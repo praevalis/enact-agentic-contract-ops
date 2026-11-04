@@ -3,6 +3,7 @@
 from .base import Base, metadata
 from .errors import DatabaseError, DatabaseIntegrityError, DatabasePersistenceError
 from .manager import DatabaseManager
+from .uows import SqlAlchemyIdentityUnitOfWork
 
 __all__ = [
     'Base',
@@ -10,5 +11,6 @@ __all__ = [
     'DatabaseIntegrityError',
     'DatabaseManager',
     'DatabasePersistenceError',
+    'SqlAlchemyIdentityUnitOfWork',
     'metadata',
 ]
