@@ -9,13 +9,13 @@ from enact.identity.errors import InvalidRefreshTokenError
 from enact.identity.schemas import LoginCreate, PrincipalRead, UserCreate
 from enact.platform.settings import Settings
 
-from .identity_support import (
+from ..dependencies import get_request_settings
+from .dependencies import (
     get_authentication_service,
-    get_identity_settings,
     get_principal,
     require_browser_origin,
-    to_principal_read,
 )
+from .mappers import to_principal_read
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 REFRESH_COOKIE = 'enact_refresh'
@@ -46,7 +46,7 @@ async def register(
     payload: UserCreate,
     response: Response,
     authentication: Annotated[AuthenticationService, Depends(get_authentication_service)],
-    settings: Annotated[Settings, Depends(get_identity_settings)],
+    settings: Annotated[Settings, Depends(get_request_settings)],
 ) -> PrincipalRead:
     """Register an account and issue an account-only session.
 
@@ -73,7 +73,7 @@ async def login(
     payload: LoginCreate,
     response: Response,
     authentication: Annotated[AuthenticationService, Depends(get_authentication_service)],
-    settings: Annotated[Settings, Depends(get_identity_settings)],
+    settings: Annotated[Settings, Depends(get_request_settings)],
 ) -> PrincipalRead:
     """Authenticate and select an available organization when one exists.
 
@@ -96,7 +96,7 @@ async def refresh(
     response: Response,
     _: Annotated[None, Depends(require_browser_origin)],
     authentication: Annotated[AuthenticationService, Depends(get_authentication_service)],
-    settings: Annotated[Settings, Depends(get_identity_settings)],
+    settings: Annotated[Settings, Depends(get_request_settings)],
     refresh_token: Annotated[str | None, Cookie(alias=REFRESH_COOKIE)] = None,
 ) -> PrincipalRead:
     """Rotate the refresh cookie and renew the current access context.

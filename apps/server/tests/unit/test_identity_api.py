@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
-from enact.api.identity_support import to_principal_read
+from enact.api.identity.mappers import to_principal_read
 from enact.api.v1 import router
 from enact.identity.entities import AuthSession, User
 from enact.identity.services import AuthenticationResult

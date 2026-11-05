@@ -5,7 +5,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from enact.identity import AccessTokenCodec, OrganizationContextService, Principal
+from enact.identity import (
+    AccessTokenCodec,
+    IdentityUnitOfWork,
+    OrganizationContextService,
+    Principal,
+)
 from enact.identity.errors import UserNotFoundError
 from enact.identity.schemas import (
     MembershipRead,
@@ -15,15 +20,14 @@ from enact.identity.schemas import (
     OrganizationSwitchUpdate,
     UserRead,
 )
-from enact.infrastructure.database.uows.identity import SqlAlchemyIdentityUnitOfWork
 from enact.platform.settings import Settings
 
-from .identity_support import (
-    get_identity_settings,
+from ..dependencies import get_request_settings
+from .dependencies import (
     get_identity_uow,
     get_principal,
-    to_organization_context_read,
 )
+from .mappers import to_organization_context_read
 
 router = APIRouter(prefix='/users', tags=['users'])
 
@@ -31,7 +35,7 @@ router = APIRouter(prefix='/users', tags=['users'])
 @router.get('/me', response_model=UserRead)
 async def read_me(
     principal: Annotated[Principal, Depends(get_principal)],
-    uow: Annotated[SqlAlchemyIdentityUnitOfWork, Depends(get_identity_uow)],
+    uow: Annotated[IdentityUnitOfWork, Depends(get_identity_uow)],
 ) -> UserRead:
     """Return the authenticated user's public profile.
 
@@ -54,8 +58,8 @@ async def read_me(
 @router.get('/me/organizations', response_model=list[OrganizationMembershipRead])
 async def list_organizations(
     principal: Annotated[Principal, Depends(get_principal)],
-    uow: Annotated[SqlAlchemyIdentityUnitOfWork, Depends(get_identity_uow)],
-    settings: Annotated[Settings, Depends(get_identity_settings)],
+    uow: Annotated[IdentityUnitOfWork, Depends(get_identity_uow)],
+    settings: Annotated[Settings, Depends(get_request_settings)],
 ) -> list[OrganizationMembershipRead]:
     """List the user's active organizations for the context switcher.
 
@@ -89,8 +93,8 @@ async def list_organizations(
 async def switch_organization(
     payload: OrganizationSwitchUpdate,
     principal: Annotated[Principal, Depends(get_principal)],
-    uow: Annotated[SqlAlchemyIdentityUnitOfWork, Depends(get_identity_uow)],
-    settings: Annotated[Settings, Depends(get_identity_settings)],
+    uow: Annotated[IdentityUnitOfWork, Depends(get_identity_uow)],
+    settings: Annotated[Settings, Depends(get_request_settings)],
 ) -> OrganizationContextRead:
     """Switch the current session to another active membership.
 

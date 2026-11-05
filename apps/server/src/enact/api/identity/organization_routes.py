@@ -15,7 +15,8 @@ from enact.identity.schemas import (
     OrganizationJoinCreate,
 )
 
-from .identity_support import get_onboarding_service, get_principal, to_organization_context_read
+from .dependencies import get_onboarding_service, get_principal
+from .mappers import to_organization_context_read
 
 router = APIRouter(prefix='/organizations', tags=['organizations'])
 

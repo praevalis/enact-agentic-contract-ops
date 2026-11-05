@@ -1,7 +1,7 @@
-"""Request dependencies and response mapping for identity endpoints."""
+"""FastAPI dependencies for identity endpoints."""
 
 from datetime import timedelta
-from typing import Annotated, cast
+from typing import Annotated
 from urllib.parse import urlsplit
 
 from fastapi import Depends, HTTPException, Request, status
@@ -11,42 +11,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from enact.identity import (
     AccessTokenCodec,
     AuthenticationService,
+    IdentityUnitOfWork,
     InvalidAccessTokenError,
     OnboardingService,
     PasswordHasher,
     Principal,
 )
-from enact.identity.schemas import (
-    MembershipRead,
-    OrganizationContextRead,
-    OrganizationRead,
-    PrincipalRead,
-    TokenRead,
-    UserRead,
-)
-from enact.identity.services import AuthenticationResult, OrganizationContextResult
 from enact.infrastructure.database.dependencies import get_session
 from enact.infrastructure.database.uows.identity import SqlAlchemyIdentityUnitOfWork
 from enact.platform.settings import Settings
 
+from ..dependencies import get_request_settings
+
 bearer = HTTPBearer(auto_error=False)
-
-
-def get_identity_settings(request: Request) -> Settings:
-    """Return settings captured by the application lifespan.
-
-    Args:
-        request: Active API request.
-
-    Returns:
-        Validated application settings.
-    """
-    return cast(Settings, request.app.state.settings)
 
 
 def get_identity_uow(
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> SqlAlchemyIdentityUnitOfWork:
+) -> IdentityUnitOfWork:
     """Create identity repositories over the request session.
 
     Args:
@@ -59,8 +41,8 @@ def get_identity_uow(
 
 
 def get_authentication_service(
-    uow: Annotated[SqlAlchemyIdentityUnitOfWork, Depends(get_identity_uow)],
-    settings: Annotated[Settings, Depends(get_identity_settings)],
+    uow: Annotated[IdentityUnitOfWork, Depends(get_identity_uow)],
+    settings: Annotated[Settings, Depends(get_request_settings)],
 ) -> AuthenticationService:
     """Build the authentication service for one request.
 
@@ -81,8 +63,8 @@ def get_authentication_service(
 
 
 def get_onboarding_service(
-    uow: Annotated[SqlAlchemyIdentityUnitOfWork, Depends(get_identity_uow)],
-    settings: Annotated[Settings, Depends(get_identity_settings)],
+    uow: Annotated[IdentityUnitOfWork, Depends(get_identity_uow)],
+    settings: Annotated[Settings, Depends(get_request_settings)],
 ) -> OnboardingService:
     """Build the organization setup service for one request.
 
@@ -123,7 +105,7 @@ async def get_principal(
 
 
 def require_browser_origin(
-    request: Request, settings: Annotated[Settings, Depends(get_identity_settings)]
+    request: Request, settings: Annotated[Settings, Depends(get_request_settings)]
 ) -> None:
     """Require the configured browser origin for cookie-bearing mutations.
 
@@ -138,53 +120,3 @@ def require_browser_origin(
     actual = urlsplit(request.headers.get('origin', ''))
     if (actual.scheme, actual.netloc) != (expected.scheme, expected.netloc):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Invalid request origin.')
-
-
-def to_principal_read(result: AuthenticationResult) -> PrincipalRead:
-    """Map authentication output to the public account context.
-
-    Args:
-        result: Newly issued authentication session and context.
-
-    Returns:
-        Public user, optional organization, and access-token details.
-    """
-    organization = (
-        OrganizationRead.model_validate(result.organization)
-        if result.organization is not None
-        else None
-    )
-    membership = (
-        MembershipRead.model_validate(result.membership) if result.membership is not None else None
-    )
-
-    return PrincipalRead(
-        user=UserRead.model_validate(result.user),
-        organization=organization,
-        membership=membership,
-        token=TokenRead(
-            access_token=result.access_token,
-            expires_at=result.access_token_expires_at,
-            organization_id=result.session.current_organization_id,
-        ),
-    )
-
-
-def to_organization_context_read(result: OrganizationContextResult) -> OrganizationContextRead:
-    """Map an activated organization context to the public response.
-
-    Args:
-        result: Updated session, membership, and access token.
-
-    Returns:
-        Public organization context.
-    """
-    return OrganizationContextRead(
-        organization=OrganizationRead.model_validate(result.organization),
-        membership=MembershipRead.model_validate(result.membership),
-        token=TokenRead(
-            access_token=result.access_token,
-            expires_at=result.access_token_expires_at,
-            organization_id=result.organization.id,
-        ),
-    )
