@@ -249,6 +249,21 @@ The resource model centers on:
 /cases/{id}/evidence
 ```
 
+The HTTP layer under `enact.api` is organized into feature packages. Identity routes and
+their request dependencies live in `api/identity`; case routes and dependencies live in
+`api/cases`; customer routes and dependencies live in `api/customers`. Each feature keeps
+FastAPI dependency providers in `dependencies.py` and route decorators with its routes.
+Transport mappers that assemble API read schemas live in a separate `mappers.py` when
+mapping requires more than direct schema validation. Browser-origin and bearer-token
+checks are identity HTTP dependencies. Domain packages own application rules and
+interfaces without importing FastAPI. Repository implementations and transaction details
+remain under `enact.infrastructure`.
+
+Dependency providers construct concrete implementations internally but annotate their
+return types with the applicable `Protocol` when an application interface already exists,
+such as a unit of work. Values without an established interface retain their concrete
+return type; an interface is not introduced solely to change a dependency annotation.
+
 The generated TypeScript client is the browser's API boundary. The UI centers on a case workspace with document evidence, discovered context, mapping review, decisions, intent and amendment diffs, affected state, execution, reconciliation, and timeline views. Administration is limited to connections, explicit policies, and reusable mappings.
 
 ## 10. Testing and evaluation
