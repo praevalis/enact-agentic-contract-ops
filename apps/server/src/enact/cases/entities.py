@@ -1,4 +1,4 @@
-"""Persistence-independent customer and case records."""
+"""Persistence-independent case records and pagination values."""
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -18,3 +18,20 @@ class Case:
     concurrency_version: int
     created_at: datetime
     updated_at: datetime
+    prior_case_id: UUID | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class CaseCursor:
+    """Position in the newest-first case ordering."""
+
+    id: UUID
+    created_at: datetime
+
+
+@dataclass(slots=True)
+class CasePage:
+    """A bounded case collection and its next position."""
+
+    items: list[Case]
+    next_cursor: CaseCursor | None

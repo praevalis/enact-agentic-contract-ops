@@ -253,6 +253,8 @@ The HTTP layer under `enact.api` is organized into feature packages. Identity ro
 their request dependencies live in `api/identity`; case routes and dependencies live in
 `api/cases`; customer routes and dependencies live in `api/customers`. Each feature keeps
 FastAPI dependency providers in `dependencies.py` and route decorators with its routes.
+Feature-specific request, response, and grouped query parameter schemas live in the
+respective domain package's `schemas.py`.
 Transport mappers that assemble API read schemas live in a separate `mappers.py` when
 mapping requires more than direct schema validation. Browser-origin and bearer-token
 checks are identity HTTP dependencies. Domain packages own application rules and
@@ -263,6 +265,11 @@ Dependency providers construct concrete implementations internally but annotate 
 return types with the applicable `Protocol` when an application interface already exists,
 such as a unit of work. Values without an established interface retain their concrete
 return type; an interface is not introduced solely to change a dependency annotation.
+
+Case list and detail reads are available to all four active organization roles. Case creation
+remains limited to deal desk and administrators. Case lists use a newest-first cursor over
+`created_at` and `id`, default to 25 items, and allow at most 100. Optional list filters are
+`customer_id`, `case_type`, and `status`. Tenant RLS applies to both list and detail queries.
 
 The generated TypeScript client is the browser's API boundary. The UI centers on a case workspace with document evidence, discovered context, mapping review, decisions, intent and amendment diffs, affected state, execution, reconciliation, and timeline views. Administration is limited to connections, explicit policies, and reusable mappings.
 

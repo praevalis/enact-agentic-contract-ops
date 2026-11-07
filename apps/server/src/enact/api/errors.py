@@ -3,7 +3,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from enact.cases.errors import CaseError, PriorCaseNotFoundError
+from enact.cases.errors import CaseError, CaseNotFoundError, PriorCaseNotFoundError
 from enact.customers.errors import (
     CustomerError,
     CustomerNotFoundError,
@@ -61,7 +61,9 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(CaseError)
     async def handle_case_error(_request: Request, error: CaseError) -> JSONResponse:
         """Return the status and stable code for case errors."""
-        response_status = 404 if isinstance(error, PriorCaseNotFoundError) else 403
+        response_status = (
+            404 if isinstance(error, (CaseNotFoundError, PriorCaseNotFoundError)) else 403
+        )
 
         return JSONResponse(
             status_code=response_status,

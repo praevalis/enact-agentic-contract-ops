@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
+from enact.cases.errors import CaseNotFoundError
 from enact.cases.schemas import CaseType
 from enact.cases.services import CaseService
 from enact.customers.errors import CustomerNotFoundError
@@ -20,7 +21,8 @@ from enact.infrastructure.database.models.identity import Organization, User
 from enact.infrastructure.database.session import SessionManager, create_database_engine
 from enact.infrastructure.database.uows.cases import SqlAlchemyCaseUnitOfWork
 from enact.infrastructure.database.uows.customers import SqlAlchemyCustomerUnitOfWork
-from sqlalchemy import Connection, func, insert, select, text
+from sqlalchemy import Connection, func, insert, select, text, update
+from sqlalchemy.exc import IntegrityError
 
 
 def _create_case_and_customer_tables(connection: Connection) -> None:
@@ -125,6 +127,36 @@ class TestCaseIsolation:
                     prior_case_id=baseline.id,
                 )
 
+            async with engine.begin() as connection:
+                await connection.execute(
+                    update(Case)
+                    .where(Case.id.in_((baseline.id, amendment.id)))
+                    .values(created_at=now)
+                )
+
+            async with rls_session_manager.session_scope() as session:
+                service = CaseService(uow=SqlAlchemyCaseUnitOfWork(session))
+                detail = await service.get(principal=principal, case_id=amendment.id)
+                first = await service.list(principal=principal, page_size=1)
+                assert first.next_cursor is not None
+                second = await service.list(
+                    principal=principal, page_size=1, cursor=first.next_cursor
+                )
+                filtered = await service.list(
+                    principal=principal,
+                    page_size=25,
+                    customer_id=customer.id,
+                    case_type=CaseType.AMENDMENT,
+                    status='draft',
+                )
+
+            assert detail.prior_case_id == baseline.id
+            assert first.items[0].id == max(baseline.id, amendment.id)
+            assert second.items[0].id == min(baseline.id, amendment.id)
+            assert second.next_cursor is None
+            assert [item.id for item in filtered.items] == [amendment.id]
+            assert filtered.items[0].prior_case_id == baseline.id
+
             foreign_principal = Principal(
                 user_id=actor_id,
                 organization_id=organization_b,
@@ -143,6 +175,13 @@ class TestCaseIsolation:
                         case_type=CaseType.ACTIVATION,
                         prior_case_id=None,
                     )
+
+            async with rls_session_manager.session_scope() as session:
+                service = CaseService(uow=SqlAlchemyCaseUnitOfWork(session))
+                assert (await service.list(principal=foreign_principal, page_size=25)).items == []
+
+                with pytest.raises(CaseNotFoundError):
+                    await service.get(principal=foreign_principal, case_id=amendment.id)
 
             async with rls_session_manager.tenant_session_scope(organization_b) as session:
                 assert await session.scalar(select(func.count()).select_from(Customer)) == 0
@@ -194,6 +233,28 @@ class TestCaseIsolation:
                     )
                 ).one()
                 assert edge == (baseline.id, amendment.id)
+
+            # A distinct predecessor must not be attached to the same amendment case.
+            with pytest.raises(IntegrityError, match='uq_case_lineage_amends_target'):
+                async with engine.begin() as connection:
+                    other_prior_case_id = uuid4()
+                    await connection.execute(
+                        insert(Case).values(
+                            id=other_prior_case_id,
+                            organization_id=organization_a,
+                            customer_id=customer.id,
+                            title='Other baseline',
+                            case_type='activation',
+                        )
+                    )
+                    await connection.execute(
+                        insert(CaseLineage).values(
+                            organization_id=organization_a,
+                            source_case_id=other_prior_case_id,
+                            target_case_id=amendment.id,
+                            relationship_type='amends',
+                        )
+                    )
         finally:
             async with engine.begin() as connection:
                 for table in ('customers', 'cases', 'case_lineage', 'audit_events'):

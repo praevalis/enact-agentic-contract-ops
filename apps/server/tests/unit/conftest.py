@@ -1,12 +1,12 @@
 """Shared fixtures for case and customer unit tests."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import UTC, datetime, timedelta
 from types import TracebackType
 from uuid import UUID, uuid4
 
 import pytest
-from enact.cases.entities import Case
+from enact.cases.entities import Case, CaseCursor
 from enact.customers.entities import Customer
 from enact.identity.authentication import Principal
 
@@ -39,6 +39,35 @@ class _Cases:
 
     async def get(self, case_id: UUID) -> Case | None:
         return self.items.get(case_id)
+
+    async def list_for_organization(
+        self,
+        *,
+        organization_id: UUID,
+        limit: int,
+        cursor: CaseCursor | None = None,
+        customer_id: UUID | None = None,
+        case_type: str | None = None,
+        status: str | None = None,
+    ) -> Sequence[Case]:
+        items = sorted(
+            (case for case in self.items.values() if case.organization_id == organization_id),
+            key=lambda case: (case.created_at, case.id),
+            reverse=True,
+        )
+        if cursor is not None:
+            items = [
+                case
+                for case in items
+                if (case.created_at, case.id) < (cursor.created_at, cursor.id)
+            ]
+        if customer_id is not None:
+            items = [case for case in items if case.customer_id == customer_id]
+        if case_type is not None:
+            items = [case for case in items if case.case_type == case_type]
+        if status is not None:
+            items = [case for case in items if case.status == status]
+        return items[:limit]
 
 
 class _Lineage:

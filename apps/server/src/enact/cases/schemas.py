@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Self
 from uuid import UUID
 
-from pydantic import StringConstraints, model_validator
+from pydantic import Field, StringConstraints, model_validator
 
 from enact.platform.schemas import BaseRead, BaseWrite
 
@@ -45,7 +45,7 @@ class CaseCreate(BaseWrite):
 
 
 class CaseRead(BaseRead):
-    """Created case with its initial state and optional predecessor."""
+    """Case state and optional amendment predecessor."""
 
     id: UUID
     organization_id: UUID
@@ -57,3 +57,20 @@ class CaseRead(BaseRead):
     prior_case_id: UUID | None
     created_at: datetime
     updated_at: datetime
+
+
+class CaseListRead(BaseRead):
+    """A cursor page of cases visible to the active organization."""
+
+    items: list[CaseRead]
+    next_cursor: str | None
+
+
+class CaseListParams(BaseWrite):
+    """Pagination and filters for a tenant case list."""
+
+    page_size: int = Field(default=25, ge=1, le=100)
+    cursor: str | None = None
+    customer_id: UUID | None = None
+    case_type: CaseType | None = None
+    status: str | None = None

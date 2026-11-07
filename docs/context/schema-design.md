@@ -287,6 +287,8 @@ status changes.
 Represents typed relationships between cases, such as `amends` or `supersedes`. Explicit edges
 preserve amendment history and can carry authority metadata without reducing lineage to one
 unexplained prior-case pointer.
+Each amendment case has at most one incoming `amends` edge, so its predecessor is unambiguous.
+Other relationship types retain their own cardinality.
 
 ### `case_runs`
 

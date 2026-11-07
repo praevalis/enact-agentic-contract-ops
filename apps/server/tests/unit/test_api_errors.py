@@ -1,8 +1,10 @@
 """HTTP mappings for domain errors."""
 
+from uuid import uuid4
+
 import pytest
 from enact.api.errors import register_error_handlers
-from enact.cases.errors import CasePermissionDeniedError, PriorCaseNotFoundError
+from enact.cases.errors import CaseNotFoundError, CasePermissionDeniedError, PriorCaseNotFoundError
 from enact.customers.errors import CustomerNotFoundError, CustomerPermissionDeniedError
 from enact.identity.errors import InvalidAccessTokenError
 from enact.platform.errors import EnactError
@@ -19,6 +21,7 @@ class TestErrorHandlers:
         [
             (InvalidAccessTokenError(), 401),
             (CasePermissionDeniedError(), 403),
+            (CaseNotFoundError(uuid4()), 404),
             (PriorCaseNotFoundError(), 404),
             (CustomerPermissionDeniedError(), 403),
             (CustomerNotFoundError(), 404),

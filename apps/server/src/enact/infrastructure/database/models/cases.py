@@ -11,6 +11,7 @@ from sqlalchemy import (
     Integer,
     String,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -77,6 +78,13 @@ class CaseLineage(UUIDPrimaryKeyMixin, CreatedAtMixin, Base):
         ),
         Index('ix_case_lineage_source', 'organization_id', 'source_case_id'),
         Index('ix_case_lineage_target', 'organization_id', 'target_case_id'),
+        Index(
+            'uq_case_lineage_amends_target',
+            'organization_id',
+            'target_case_id',
+            unique=True,
+            postgresql_where=text("relationship_type = 'amends'"),
+        ),
     )
 
     organization_id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), nullable=False)

@@ -19,6 +19,6 @@ def get_case_service(
         session: Request-scoped database session.
 
     Returns:
-        Case creation service.
+        Case service.
     """
     return CaseService(uow=SqlAlchemyCaseUnitOfWork(session))

@@ -1,13 +1,14 @@
-"""Persistence contracts required by case intake."""
+"""Case persistence contracts."""
 
+from collections.abc import Sequence
 from typing import Protocol
 from uuid import UUID
 
-from .entities import Case
+from .entities import Case, CaseCursor
 
 
 class CaseRepository(Protocol):
-    """Create and resolve tenant cases."""
+    """Create, retrieve, and list tenant cases."""
 
     async def create(
         self, *, organization_id: UUID, customer_id: UUID, title: str, case_type: str
@@ -33,6 +34,31 @@ class CaseRepository(Protocol):
 
         Returns:
             The visible case, or ``None`` when it is unavailable.
+        """
+        ...
+
+    async def list_for_organization(
+        self,
+        *,
+        organization_id: UUID,
+        limit: int,
+        cursor: CaseCursor | None = None,
+        customer_id: UUID | None = None,
+        case_type: str | None = None,
+        status: str | None = None,
+    ) -> Sequence[Case]:
+        """Return a newest-first, tenant-scoped page of cases.
+
+        Args:
+            organization_id: Authorized organization whose cases are listed.
+            limit: Maximum rows to retrieve, including the lookahead row.
+            cursor: Last position from the preceding page, if any.
+            customer_id: Optional customer filter.
+            case_type: Optional activation or amendment filter.
+            status: Optional lifecycle status filter.
+
+        Returns:
+            Cases ordered by creation time and identifier, both descending.
         """
         ...
 

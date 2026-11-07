@@ -1,4 +1,4 @@
-"""Atomic case creation transaction boundary."""
+"""Atomic case transaction boundary."""
 
 from types import TracebackType
 from typing import Protocol, Self
@@ -11,7 +11,7 @@ from .repositories import CaseLineageRepository, CaseRepository
 
 
 class CaseUnitOfWork(Protocol):
-    """Coordinate customer validation, case creation, lineage, and audit."""
+    """Coordinate case reads and writes under one tenant transaction."""
 
     customers: CustomerRepository
     cases: CaseRepository
@@ -19,11 +19,11 @@ class CaseUnitOfWork(Protocol):
     audit_events: AuditEventRepository
 
     async def set_organization_context(self, organization_id: UUID) -> None:
-        """Scope case creation to the authorized organization."""
+        """Scope case operations to the authorized organization."""
         ...
 
     async def __aenter__(self) -> Self:
-        """Begin a case creation transaction."""
+        """Begin a case transaction."""
         ...
 
     async def __aexit__(

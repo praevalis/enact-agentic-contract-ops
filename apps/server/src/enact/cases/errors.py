@@ -1,5 +1,7 @@
 """Case domain errors."""
 
+from uuid import UUID
+
 from enact.platform.errors import EnactError
 
 
@@ -19,14 +21,26 @@ class CaseError(EnactError):
 
 
 class CasePermissionDeniedError(CaseError):
-    """Raised when the principal cannot manage cases in the active organization."""
+    """Raised when the principal cannot access cases in the active organization."""
 
     def __init__(self) -> None:
         """Initialize a case permission error."""
         super().__init__(
-            message='Case management is not allowed for this account.',
+            message='Case access is not allowed for this account.',
             code='case_permission_denied',
         )
+
+
+class CaseNotFoundError(CaseError):
+    """Raised when a requested case is absent or outside the active organization."""
+
+    def __init__(self, case_id: UUID) -> None:
+        """Initialize a missing-case error.
+
+        Args:
+            case_id: Identifier of the unavailable case.
+        """
+        super().__init__(message=f'Case {case_id} does not exist.', code='case_not_found')
 
 
 class PriorCaseNotFoundError(CaseError):

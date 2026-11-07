@@ -1,10 +1,12 @@
 """SQLAlchemy case and lineage persistence."""
 
+from collections.abc import Sequence
 from uuid import UUID
 
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from enact.cases.entities import Case
+from enact.cases.entities import Case, CaseCursor
 
 from ..models.cases import Case as CaseModel
 from ..models.cases import CaseLineage
@@ -12,7 +14,7 @@ from ..session.flush import flush_session
 
 
 class SqlAlchemyCaseRepository:
-    """Create and resolve cases under tenant RLS."""
+    """Create, retrieve, and list cases under tenant RLS."""
 
     def __init__(self, session: AsyncSession) -> None:
         """Initialize the repository.
@@ -55,8 +57,84 @@ class SqlAlchemyCaseRepository:
         Returns:
             Case or ``None`` when invisible or absent.
         """
-        model = await self._session.get(CaseModel, case_id)
-        return to_case(model) if model is not None else None
+        prior_case_id = (
+            select(CaseLineage.source_case_id)
+            .where(
+                CaseLineage.target_case_id == CaseModel.id,
+                CaseLineage.relationship_type == 'amends',
+            )
+            .correlate(CaseModel)
+            .scalar_subquery()
+        )
+        row = (
+            await self._session.execute(
+                select(CaseModel, prior_case_id).where(CaseModel.id == case_id)
+            )
+        ).one_or_none()
+        return to_case(row[0], row[1]) if row is not None else None
+
+    async def list_for_organization(
+        self,
+        *,
+        organization_id: UUID,
+        limit: int,
+        cursor: CaseCursor | None = None,
+        customer_id: UUID | None = None,
+        case_type: str | None = None,
+        status: str | None = None,
+    ) -> Sequence[Case]:
+        """List a bounded case page under RLS and explicit tenant scope.
+
+        Args:
+            organization_id: Authorized organization whose cases are listed.
+            limit: Maximum rows to retrieve, including one lookahead row.
+            cursor: Last position from the previous page.
+            customer_id: Optional customer filter.
+            case_type: Optional case type filter.
+            status: Optional status filter.
+
+        Returns:
+            Cases sorted by creation time and identifier, both descending.
+        """
+        prior_case_id = (
+            select(CaseLineage.source_case_id)
+            .where(
+                CaseLineage.target_case_id == CaseModel.id,
+                CaseLineage.relationship_type == 'amends',
+            )
+            .correlate(CaseModel)
+            .scalar_subquery()
+        )
+        statement = select(CaseModel, prior_case_id).where(
+            CaseModel.organization_id == organization_id
+        )
+
+        if customer_id is not None:
+            statement = statement.where(CaseModel.customer_id == customer_id)
+
+        if case_type is not None:
+            statement = statement.where(CaseModel.case_type == case_type)
+
+        if status is not None:
+            statement = statement.where(CaseModel.status == status)
+
+        if cursor is not None:
+            statement = statement.where(
+                or_(
+                    CaseModel.created_at < cursor.created_at,
+                    and_(
+                        CaseModel.created_at == cursor.created_at,
+                        CaseModel.id < cursor.id,
+                    ),
+                )
+            )
+
+        rows = (
+            await self._session.execute(
+                statement.order_by(CaseModel.created_at.desc(), CaseModel.id.desc()).limit(limit)
+            )
+        ).all()
+        return [to_case(model, predecessor) for model, predecessor in rows]
 
 
 class SqlAlchemyCaseLineageRepository:
@@ -91,8 +169,8 @@ class SqlAlchemyCaseLineageRepository:
         await flush_session(self._session)
 
 
-def to_case(model: CaseModel) -> Case:
-    """Copy a persistence model into the case boundary."""
+def to_case(model: CaseModel, prior_case_id: UUID | None = None) -> Case:
+    """Copy a persistence model and its predecessor into the case boundary."""
     return Case(
         id=model.id,
         organization_id=model.organization_id,
@@ -103,4 +181,5 @@ def to_case(model: CaseModel) -> Case:
         concurrency_version=model.concurrency_version,
         created_at=model.created_at,
         updated_at=model.updated_at,
+        prior_case_id=prior_case_id,
     )
