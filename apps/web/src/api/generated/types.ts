@@ -20,7 +20,6 @@ export interface paths {
          *     Args:
          *         payload: Submitted local credentials.
          *         response: HTTP response receiving the refresh cookie.
-         *         _: Browser Origin validation dependency.
          *         authentication: Local authentication workflow.
          *         settings: Runtime cookie settings.
          *
@@ -109,7 +108,6 @@ export interface paths {
          *     Args:
          *         payload: New account credentials and profile.
          *         response: HTTP response receiving the refresh cookie.
-         *         _: Browser Origin validation dependency.
          *         authentication: Local authentication workflow.
          *         settings: Runtime cookie settings.
          *
@@ -117,6 +115,120 @@ export interface paths {
          *         Account context and short-lived access token.
          */
         post: operations["register_api_v1_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Cases
+         * @description List cases visible to the active organization.
+         *
+         *     Args:
+         *         principal: Freshly validated organization principal.
+         *         cases: Case service for the request.
+         *         params: Pagination and optional filters from the query string.
+         *
+         *     Returns:
+         *         Cases and an optional cursor for the next page.
+         *
+         *     Raises:
+         *         HTTPException: If the supplied cursor is malformed.
+         */
+        get: operations["list_cases_api_v1_cases_get"];
+        put?: never;
+        /**
+         * Create Case
+         * @description Create a draft activation or amendment for an existing customer.
+         *
+         *     Args:
+         *         payload: Customer, title, type, and optional amendment predecessor.
+         *         principal: Freshly validated account or organization principal.
+         *         cases: Case creation service.
+         *
+         *     Returns:
+         *         Created draft case and predecessor identifier.
+         */
+        post: operations["create_case_api_v1_cases_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cases/{case_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Case
+         * @description Return one case and its amendment predecessor.
+         *
+         *     Args:
+         *         case_id: Case identifier.
+         *         principal: Freshly validated organization principal.
+         *         cases: Case service for the request.
+         *
+         *     Returns:
+         *         The visible case.
+         */
+        get: operations["get_case_api_v1_cases__case_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Customers
+         * @description List customers visible to the active organization.
+         *
+         *     Args:
+         *         principal: Freshly validated organization principal.
+         *         customers: Customer service for the request.
+         *         params: Pagination and optional filters from the query string.
+         *
+         *     Returns:
+         *         Customers and an optional cursor for the next page.
+         *
+         *     Raises:
+         *         HTTPException: If the supplied cursor is malformed.
+         */
+        get: operations["list_customers_api_v1_customers_get"];
+        put?: never;
+        /**
+         * Create Customer
+         * @description Create a customer independently of case intake.
+         *
+         *     Args:
+         *         payload: Customer display name.
+         *         principal: Freshly validated account or organization principal.
+         *         customers: Customer creation service.
+         *
+         *     Returns:
+         *         Created customer.
+         */
+        post: operations["create_customer_api_v1_customers_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -351,6 +463,126 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * CaseCreate
+         * @description New activation or amendment for an existing customer.
+         */
+        CaseCreate: {
+            case_type: components["schemas"]["CaseType"];
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Prior Case Id */
+            prior_case_id?: string | null;
+            /** Title */
+            title: string;
+        };
+        /**
+         * CaseListRead
+         * @description A cursor page of cases visible to the active organization.
+         */
+        CaseListRead: {
+            /** Items */
+            items: components["schemas"]["CaseRead"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /**
+         * CaseRead
+         * @description Case state and optional amendment predecessor.
+         */
+        CaseRead: {
+            case_type: components["schemas"]["CaseType"];
+            /** Concurrency Version */
+            concurrency_version: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+            /** Prior Case Id */
+            prior_case_id: string | null;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * CaseType
+         * @description Supported intake case kinds.
+         * @enum {string}
+         */
+        CaseType: "activation" | "amendment";
+        /**
+         * CustomerCreate
+         * @description Customer display details to create within an organization.
+         */
+        CustomerCreate: {
+            /** Display Name */
+            display_name: string;
+        };
+        /**
+         * CustomerListRead
+         * @description A cursor page of customers visible to the active organization.
+         */
+        CustomerListRead: {
+            /** Items */
+            items: components["schemas"]["CustomerRead"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /**
+         * CustomerRead
+         * @description Customer identity and lifecycle state.
+         */
+        CustomerRead: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Display Name */
+            display_name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+            /** Status */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -676,6 +908,172 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PrincipalRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_cases_api_v1_cases_get: {
+        parameters: {
+            query?: {
+                page_size?: number;
+                cursor?: string | null;
+                customer_id?: string | null;
+                case_type?: components["schemas"]["CaseType"] | null;
+                status?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseListRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_case_api_v1_cases_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_case_api_v1_cases__case_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_customers_api_v1_customers_get: {
+        parameters: {
+            query?: {
+                page_size?: number;
+                cursor?: string | null;
+                status?: ("active" | "archived") | null;
+                name_query?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerListRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_customer_api_v1_customers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerRead"];
                 };
             };
             /** @description Validation Error */

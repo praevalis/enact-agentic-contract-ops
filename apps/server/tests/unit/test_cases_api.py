@@ -1,16 +1,14 @@
 """Case route and cursor contract checks."""
 
 from collections.abc import Callable
-from datetime import UTC, datetime
 from typing import cast
 from uuid import uuid4
 
 import pytest
 from enact.api.cases.dependencies import get_case_service
-from enact.api.cases.pagination import decode_case_cursor, encode_case_cursor
 from enact.api.cases.routes import router
 from enact.api.identity.dependencies import get_principal
-from enact.cases.entities import Case, CaseCursor
+from enact.cases.entities import Case
 from enact.cases.services import CaseService
 from enact.cases.unit_of_work import CaseUnitOfWork
 from enact.identity.authentication import Principal
@@ -34,15 +32,6 @@ class TestCasesApi:
         assert paths['/api/v1/cases']['post']['responses']['201']
         assert paths['/api/v1/cases']['get']['responses']['200']
         assert paths['/api/v1/cases/{case_id}']['get']['responses']['200']
-
-    def test_cursor_round_trip_and_malformed_cursor(self) -> None:
-        """Keep a case position stable and reject malformed values."""
-        position = CaseCursor(created_at=datetime(2026, 11, 7, tzinfo=UTC), id=uuid4())
-
-        assert decode_case_cursor(encode_case_cursor(position)) == position
-
-        with pytest.raises(ValueError, match='Invalid case cursor'):
-            decode_case_cursor('not-a-cursor')
 
     def test_list_and_detail_return_case_reads(
         self, in_memory_uow: InMemoryUnitOfWork, principal_factory: Callable[[str], Principal]

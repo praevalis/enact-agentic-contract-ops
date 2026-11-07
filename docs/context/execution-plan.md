@@ -41,7 +41,7 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 
 - [x] **WP3.1** Add organization, membership, customer, case, case-lineage, and audit persistence with RLS.
 - [x] **WP3.2** Implement the replaceable authentication boundary and role authorization.
-- [ ] **WP3.3** Expose case create, list, detail, and lifecycle APIs.
+- [x] **WP3.3** Expose case create, list, and detail APIs with current status, plus customer creation and listing. Define case history and status transitions in the work packages that produce them.
 - [ ] **WP3.4** Build the case queue and case creation experience using the generated client.
 - [ ] **WP3.5** Add document bundle, document, version, and relationship persistence with RLS.
 - [ ] **WP3.6** Implement secure, idempotent multi-PDF upload to object storage.

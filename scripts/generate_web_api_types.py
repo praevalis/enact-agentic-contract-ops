@@ -37,7 +37,7 @@ def generate_api_types() -> int:
     os.environ.setdefault('ENACT_DATABASE_PASSWORD', 'openapi-generation')
     os.environ.setdefault('ENACT_OBJECT_STORAGE_ACCESS_KEY', 'openapi-generation')
     os.environ.setdefault('ENACT_OBJECT_STORAGE_SECRET_KEY', 'openapi-generation')
-    os.environ.setdefault('ENACT_AUTH_SECRET_KEY', 'openapi-generation-only-secret')
+    os.environ.setdefault('ENACT_AUTH_SECRET_KEY', 'openapi-generation-only-secret-value')
 
     from enact.main import app
 

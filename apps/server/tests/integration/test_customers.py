@@ -15,7 +15,7 @@ from enact.infrastructure.database.models.customers import Customer
 from enact.infrastructure.database.models.identity import Organization, User
 from enact.infrastructure.database.session import SessionManager, create_database_engine
 from enact.infrastructure.database.uows.customers import SqlAlchemyCustomerUnitOfWork
-from sqlalchemy import Connection, func, insert, select, text
+from sqlalchemy import Connection, func, insert, select, text, update
 
 
 def _create_customer_tables(connection: Connection) -> None:
@@ -97,6 +97,53 @@ class TestCustomerIsolation:
                     uow=SqlAlchemyCustomerUnitOfWork(session), clock=lambda: now
                 )
                 customer = await service.create(principal=principal, display_name='Redwood Systems')
+                another_customer = await service.create(
+                    principal=principal, display_name='Acme Customer'
+                )
+
+            async with engine.begin() as connection:
+                await connection.execute(
+                    update(Customer)
+                    .where(Customer.id.in_((customer.id, another_customer.id)))
+                    .values(created_at=now)
+                )
+                await connection.execute(
+                    update(Customer)
+                    .where(Customer.id == another_customer.id)
+                    .values(status='archived')
+                )
+
+            async with rls_session_manager.session_scope() as session:
+                service = CustomerService(uow=SqlAlchemyCustomerUnitOfWork(session))
+                first = await service.list(principal=principal, page_size=1)
+                assert first.next_cursor is not None
+                second = await service.list(
+                    principal=principal, page_size=1, cursor=first.next_cursor
+                )
+                filtered = await service.list(
+                    principal=principal,
+                    page_size=25,
+                    status='active',
+                    name_query='WOOD',
+                )
+
+            assert [first.items[0].id, second.items[0].id] == sorted(
+                (customer.id, another_customer.id), reverse=True
+            )
+            assert second.next_cursor is None
+            assert [item.id for item in filtered.items] == [customer.id]
+
+            foreign_principal = Principal(
+                user_id=actor_id,
+                organization_id=organization_b,
+                membership_id=uuid4(),
+                role='auditor',
+                session_id=uuid4(),
+                access_token_expires_at=now + timedelta(minutes=15),
+            )
+            async with rls_session_manager.session_scope() as session:
+                service = CustomerService(uow=SqlAlchemyCustomerUnitOfWork(session))
+                assert (await service.list(principal=foreign_principal, page_size=25)).items == []
 
             async with rls_session_manager.tenant_session_scope(organization_b) as session:
                 assert await session.scalar(select(func.count()).select_from(Customer)) == 0
@@ -122,7 +169,7 @@ class TestCustomerIsolation:
                         .select_from(AuditEvent)
                         .where(AuditEvent.organization_id == organization_a)
                     )
-                    == 1
+                    == 2
                 )
         finally:
             async with engine.begin() as connection:

@@ -5,12 +5,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from enact.cases import CaseCreate, CaseListParams, CaseListRead, CaseRead, CaseService
+from enact.cases import CaseCreate, CaseCursor, CaseListParams, CaseListRead, CaseRead, CaseService
 from enact.identity import Principal
 
 from ..identity.dependencies import get_principal
+from ..pagination import decode_cursor, encode_cursor
 from .dependencies import get_case_service
-from .pagination import decode_case_cursor, encode_case_cursor
 
 router = APIRouter(prefix='/cases', tags=['cases'])
 
@@ -61,7 +61,11 @@ async def list_cases(
         HTTPException: If the supplied cursor is malformed.
     """
     try:
-        position = decode_case_cursor(params.cursor) if params.cursor is not None else None
+        if params.cursor is not None:
+            created_at, identifier = decode_cursor(params.cursor)
+            position = CaseCursor(id=identifier, created_at=created_at)
+        else:
+            position = None
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
@@ -75,7 +79,11 @@ async def list_cases(
     )
     return CaseListRead(
         items=[CaseRead.model_validate(item) for item in page.items],
-        next_cursor=encode_case_cursor(page.next_cursor) if page.next_cursor is not None else None,
+        next_cursor=(
+            encode_cursor(page.next_cursor.created_at, page.next_cursor.id)
+            if page.next_cursor is not None
+            else None
+        ),
     )
 
 

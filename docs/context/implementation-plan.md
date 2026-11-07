@@ -270,6 +270,9 @@ Case list and detail reads are available to all four active organization roles. 
 remains limited to deal desk and administrators. Case lists use a newest-first cursor over
 `created_at` and `id`, default to 25 items, and allow at most 100. Optional list filters are
 `customer_id`, `case_type`, and `status`. Tenant RLS applies to both list and detail queries.
+Customer lists are available to all four active organization roles and use the same cursor
+ordering and page bounds as case lists. They support optional status and case-insensitive
+display-name search. Customer creation remains limited to deal desk and administrators.
 
 The generated TypeScript client is the browser's API boundary. The UI centers on a case workspace with document evidence, discovered context, mapping review, decisions, intent and amendment diffs, affected state, execution, reconciliation, and timeline views. Administration is limited to connections, explicit policies, and reusable mappings.
 

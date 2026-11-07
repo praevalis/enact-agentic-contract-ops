@@ -15,3 +15,19 @@ class Customer:
     status: str
     created_at: datetime
     updated_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class CustomerCursor:
+    """Position in the newest-first customer ordering."""
+
+    id: UUID
+    created_at: datetime
+
+
+@dataclass(slots=True)
+class CustomerPage:
+    """A bounded customer collection and its next position."""
+
+    items: list[Customer]
+    next_cursor: CustomerCursor | None

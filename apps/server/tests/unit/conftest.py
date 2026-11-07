@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 
 import pytest
 from enact.cases.entities import Case, CaseCursor
-from enact.customers.entities import Customer
+from enact.customers.entities import Customer, CustomerCursor
 from enact.identity.authentication import Principal
 
 NOW = datetime(2026, 11, 5, tzinfo=UTC)
@@ -24,6 +24,40 @@ class _Customers:
 
     async def get(self, customer_id: UUID) -> Customer | None:
         return self.items.get(customer_id)
+
+    async def list_for_organization(
+        self,
+        *,
+        organization_id: UUID,
+        limit: int,
+        cursor: CustomerCursor | None = None,
+        status: str | None = None,
+        name_query: str | None = None,
+    ) -> Sequence[Customer]:
+        items = sorted(
+            (
+                customer
+                for customer in self.items.values()
+                if customer.organization_id == organization_id
+            ),
+            key=lambda customer: (customer.created_at, customer.id),
+            reverse=True,
+        )
+        if cursor is not None:
+            items = [
+                customer
+                for customer in items
+                if (customer.created_at, customer.id) < (cursor.created_at, cursor.id)
+            ]
+        if status is not None:
+            items = [customer for customer in items if customer.status == status]
+        if name_query is not None:
+            items = [
+                customer
+                for customer in items
+                if name_query.lower() in customer.display_name.lower()
+            ]
+        return items[:limit]
 
 
 class _Cases:
