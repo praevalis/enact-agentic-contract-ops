@@ -3,3 +3,4 @@ coverage
 src/api/generated
 src/api/openapi.json
 pnpm-lock.yaml
+*.svg

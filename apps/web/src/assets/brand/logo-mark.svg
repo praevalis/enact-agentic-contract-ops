@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Enact mark</title>
+  <rect width="64" height="64" rx="10" fill="#171D20"/>
+  <path d="M16 16h27v6H22v7h24v6H22v7h21v6H16V16Z" fill="#FBFBFA"/>
+  <path d="M22 29h24v6H22zM50 29h7v6h-7z" fill="#C9A75D"/>
+</svg>

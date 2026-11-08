@@ -42,16 +42,18 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 - [x] **WP3.1** Add organization, membership, customer, case, case-lineage, and audit persistence with RLS.
 - [x] **WP3.2** Implement the replaceable authentication boundary and role authorization.
 - [x] **WP3.3** Expose case create, list, and detail APIs with current status, plus customer creation and listing. Define case history and status transitions in the work packages that produce them.
-- [ ] **WP3.4** Build the case queue and case creation experience using the generated client.
-- [ ] **WP3.5** Add document bundle, document, version, and relationship persistence with RLS.
-- [ ] **WP3.6** Implement secure, idempotent multi-PDF upload to object storage.
-- [ ] **WP3.7** Implement the processor-neutral parsed-document and source-span model.
-- [ ] **WP3.8** Evaluate Docling and the minimum viable alternative against the reference PDFs and record the decision.
-- [ ] **WP3.9** Integrate the selected processor with extraction-quality and failure diagnostics.
-- [ ] **WP3.10** Expose document, classification, relationship, processing-status, and source APIs.
-- [ ] **WP3.11** Build document upload, lineage, classification correction, PDF preview, and source-span inspection.
-- [ ] **WP3.12** Add unit, integration, tenant-isolation, API, UI, and end-to-end tests for the complete intake slice.
-- [ ] **WP3.13** Evaluate whether document processing requires a worker and add one only if measurements justify it.
+- [ ] **WP3.4** Define brand guidance and establish the web design system foundations for color, typography, spacing, responsive layout, and accessible base components.
+- [ ] **WP3.5** Build browser authentication and organization-context flows using the generated client.
+- [ ] **WP3.6** Build the case queue and case creation experience using the generated client.
+- [ ] **WP3.7** Add document bundle, document, version, and relationship persistence with RLS.
+- [ ] **WP3.8** Implement secure, idempotent multi-PDF upload to object storage.
+- [ ] **WP3.9** Implement the processor-neutral parsed-document and source-span model.
+- [ ] **WP3.10** Evaluate Docling and the minimum viable alternative against the reference PDFs and record the decision.
+- [ ] **WP3.11** Integrate the selected processor with extraction-quality and failure diagnostics.
+- [ ] **WP3.12** Expose document, classification, relationship, processing-status, and source APIs.
+- [ ] **WP3.13** Build document upload, lineage, classification correction, PDF preview, and source-span inspection.
+- [ ] **WP3.14** Add unit, integration, tenant-isolation, API, UI, and end-to-end tests for the complete intake slice.
+- [ ] **WP3.15** Evaluate whether document processing requires a worker and add one only if measurements justify it.
 
 ## WP4 — Operational Discovery and Snapshot Slice
 
