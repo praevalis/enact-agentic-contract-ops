@@ -1,12 +1,14 @@
-import { render, screen } from '@testing-library/react';
-import { expect, test } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, expect, test } from 'vitest';
 
 import { App } from './App';
 
-test('renders the activation workspace placeholder', async () => {
+afterEach(() => {
+    cleanup();
+});
+
+test('renders the home placeholder', () => {
     render(<App />);
 
-    expect(
-        await screen.findByRole('heading', { name: 'Enact' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Enact' })).toBeInTheDocument();
 });

@@ -276,6 +276,11 @@ display-name search. Customer creation remains limited to deal desk and administ
 
 The generated TypeScript client is the browser's API boundary. The UI centers on a case workspace with document evidence, discovered context, mapping review, decisions, intent and amendment diffs, affected state, execution, reconciliation, and timeline views. Administration is limited to connections, explicit policies, and reusable mappings.
 
+The web client keeps application composition, global providers, and route definitions under
+`src/app`. Product flows live in feature modules, while shared components and utilities are
+introduced when a concrete flow needs them. The initial route remains a simple placeholder;
+page layout and navigation are designed with the flows they serve.
+
 ## 10. Testing and evaluation
 
 Each vertical slice includes unit, integration, API, UI, tenant-isolation, and relevant end-to-end tests before the next slice begins.

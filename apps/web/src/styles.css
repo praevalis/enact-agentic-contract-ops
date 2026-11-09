@@ -23,13 +23,52 @@
     --font-mono: 'IBM Plex Mono', 'Cascadia Code', Consolas, monospace;
 }
 
+@theme inline {
+    --color-canvas: var(--role-canvas);
+    --color-surface: var(--role-surface);
+    --color-inset: var(--role-inset);
+    --color-primary-text: var(--role-primary-text);
+    --color-secondary-text: var(--role-secondary-text);
+    --color-focus: var(--role-focus);
+}
+
 @layer base {
     :root {
-        color: var(--color-night);
-        background: var(--color-white);
+        color-scheme: light;
+        --role-canvas: var(--color-white);
+        --role-surface: var(--color-off-white);
+        --role-inset: var(--color-soft);
+        --role-primary-text: var(--color-night);
+        --role-secondary-text: var(--color-graphite);
+        --role-focus: var(--color-graphite);
+
+        color: var(--role-primary-text);
+        background: var(--role-canvas);
         font-family: var(--font-sans);
         font-synthesis: none;
         text-rendering: optimizeLegibility;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+            color-scheme: dark;
+            --role-canvas: var(--color-night);
+            --role-surface: var(--color-deep);
+            --role-inset: var(--color-raised);
+            --role-primary-text: var(--color-white);
+            --role-secondary-text: var(--color-steel);
+            --role-focus: var(--color-steel);
+        }
+    }
+
+    :root[data-theme='dark'] {
+        color-scheme: dark;
+        --role-canvas: var(--color-night);
+        --role-surface: var(--color-deep);
+        --role-inset: var(--color-raised);
+        --role-primary-text: var(--color-white);
+        --role-secondary-text: var(--color-steel);
+        --role-focus: var(--color-steel);
     }
 
     body {

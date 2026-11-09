@@ -7,6 +7,16 @@
             name="description"
             content="Enact contract-to-operations workspace"
         />
+        <script>
+            try {
+                const theme = localStorage.getItem('enact-theme');
+                if (theme === 'light' || theme === 'dark') {
+                    document.documentElement.dataset.theme = theme;
+                }
+            } catch {
+                // System appearance remains available when storage is blocked.
+            }
+        </script>
         <title>Enact</title>
     </head>
     <body>

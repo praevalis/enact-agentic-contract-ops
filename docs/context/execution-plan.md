@@ -42,7 +42,7 @@ Each unchecked task is intended to be an independent, meaningful commit. After t
 - [x] **WP3.1** Add organization, membership, customer, case, case-lineage, and audit persistence with RLS.
 - [x] **WP3.2** Implement the replaceable authentication boundary and role authorization.
 - [x] **WP3.3** Expose case create, list, and detail APIs with current status, plus customer creation and listing. Define case history and status transitions in the work packages that produce them.
-- [ ] **WP3.4** Define brand guidance and establish the web design system foundations for color, typography, spacing, responsive layout, and accessible base components.
+- [x] **WP3.4** Define brand guidance and establish web foundations for color, typography, spacing, responsive behavior, theme roles, and accessible interaction states. Design and build reusable components with the flows that need them.
 - [ ] **WP3.5** Build browser authentication and organization-context flows using the generated client.
 - [ ] **WP3.6** Build the case queue and case creation experience using the generated client.
 - [ ] **WP3.7** Add document bundle, document, version, and relationship persistence with RLS.
