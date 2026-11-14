@@ -58,6 +58,14 @@ administrator membership or redeems a manually shared, single-use invitation cod
 or join additional organizations from an existing organization session. Browser refresh tokens use
 HttpOnly cookies; access tokens are short lived and validated against current
 session and membership state.
+
+The browser configures `openapi-fetch` with the server origin and generated OpenAPI paths, which
+include `/api/v1`. It holds access tokens only in memory, restores a session by rotating the HttpOnly
+refresh cookie after reload, and shares one refresh across concurrent requests. Sign-out revokes the
+server session before clearing the local access token. Feature flows use TanStack Query for the
+authenticated principal and clear tenant-scoped cached data when the user or active organization
+changes.
+
 ### Cases
 
 Owns initial activation and amendment lifecycle, lineage, active document bundle, accepted intent, compilation attempts, concurrency version, and terminal or recoverable state.

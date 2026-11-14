@@ -55,7 +55,7 @@ The application is a modular monolith. A worker, additional deployable service, 
 - Preserve the scoped PostgreSQL roles `enact_owner`, `enact_migrate`, and `enact_app`.
 - Tenant-owned data must use fail-closed row-level security. Application filtering is not a substitute for RLS.
 - Uploaded documents must remain behind an S3-compatible object-storage boundary; MinIO is the local implementation.
-- Keep API endpoints versioned under `/api/v1`. The web client's configured base URL stops at `/api` so callers choose the API version.
+- Keep API endpoints versioned under `/api/v1`. The web client's configured base URL is the server origin; generated paths include `/api/v1`.
 
 ## Code comments
 

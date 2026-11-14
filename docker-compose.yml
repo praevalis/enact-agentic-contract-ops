@@ -110,7 +110,7 @@ services:
       context: .
       dockerfile: infra/docker/web.Dockerfile
       args:
-        VITE_API_BASE_URL: http://localhost:8000/api
+        VITE_API_BASE_URL: http://localhost:8000
     restart: unless-stopped
     ports:
       - "5173:80"

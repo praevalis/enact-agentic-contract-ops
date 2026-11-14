@@ -23,6 +23,15 @@ This file extends the repository-level `AGENTS.md` for work under `apps/web`.
 - Group imports in this order: third-party packages, application modules, relative modules, then side-effect imports such as styles.
 - Use named exports for application components, hooks, utilities, and types.
 - Do not introduce barrel files unless they provide a deliberate package boundary rather than merely shortening imports.
+- Separate logical steps in functions with blank lines, especially after guard clauses and before state changes or returns.
+- Do not create constants for one-use API paths or values without another concrete reason.
+
+## Function documentation
+
+- Add concise JSDoc to exported functions, classes, and public methods. Document non-obvious private methods and security-sensitive behavior. Constructors do not need separate JSDoc.
+- Include `@param` for parameters, `@returns` for returned values and async functions, and plain-language `@throws` descriptions when callers need to handle a defined failure. Omit tags that do not apply.
+- Keep generated API contract aliases in a dedicated contracts file when multiple aliases serve a runtime module or feature.
+- Keep documentation focused on behavior and invariants rather than restating the function name or narrating each statement.
 
 ## React
 
@@ -64,7 +73,7 @@ This file extends the repository-level `AGENTS.md` for work under `apps/web`.
 - Invalidate or update cached data deliberately after mutations. Do not rely on incidental refetches.
 - Handle loading, empty, error, stale, and success states explicitly.
 - Use stable server error codes for programmatic behavior. Do not parse human-readable error messages.
-- The configured API base URL ends at `/api`; requests must select the intended API version, such as `/v1`.
+- The configured API base URL is the server origin. Use generated paths, which include `/api/v1`.
 - Client-facing collection views should consume cursor-based pagination. Internal or administrative views may use offset-based pagination when provided by the API.
 
 ## Components and accessibility
