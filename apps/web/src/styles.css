@@ -30,6 +30,7 @@
     --color-primary-text: var(--role-primary-text);
     --color-secondary-text: var(--role-secondary-text);
     --color-focus: var(--role-focus);
+    --color-control-hover: var(--role-control-hover);
 }
 
 @layer base {
@@ -41,6 +42,7 @@
         --role-primary-text: var(--color-night);
         --role-secondary-text: var(--color-graphite);
         --role-focus: var(--color-graphite);
+        --role-control-hover: var(--color-line);
 
         color: var(--role-primary-text);
         background: var(--role-canvas);
@@ -58,6 +60,7 @@
             --role-primary-text: var(--color-white);
             --role-secondary-text: var(--color-steel);
             --role-focus: var(--color-steel);
+            --role-control-hover: var(--color-edge);
         }
     }
 
@@ -69,6 +72,7 @@
         --role-primary-text: var(--color-white);
         --role-secondary-text: var(--color-steel);
         --role-focus: var(--color-steel);
+        --role-control-hover: var(--color-edge);
     }
 
     body {

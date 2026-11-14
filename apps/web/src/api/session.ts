@@ -70,6 +70,15 @@ export class ApiSession {
     }
 
     /**
+     * Stores a replacement access token returned by an organization mutation.
+     *
+     * @param token - Token issued for the new organization context.
+     */
+    setAccessToken(token: AccessToken): void {
+        this.token = token;
+    }
+
+    /**
      * Revokes the server session before clearing the local access token.
      *
      * @returns A promise that resolves after revocation or when no token is present.

@@ -21,6 +21,7 @@ apps/web/coverage/
 
 # Generated and temporary output
 tmp/
+/docs/bin/*
 
 # Test and tool caches
 .coverage

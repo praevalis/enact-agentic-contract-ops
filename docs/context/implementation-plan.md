@@ -286,12 +286,15 @@ The generated TypeScript client is the browser's API boundary. The UI centers on
 
 The web client keeps application composition, global providers, and route definitions under
 `src/app`. Product flows live in feature modules, while shared components and utilities are
-introduced when a concrete flow needs them. The initial route remains a simple placeholder;
-page layout and navigation are designed with the flows they serve.
+introduced when a concrete flow needs them. Page layout and navigation are designed with the flows
+they serve.
+Shared controls use `class-variance-authority` for visual variants established by real consumers.
+Native control semantics and accessible form relationships remain in the components themselves.
 
 ## 10. Testing and evaluation
 
-Each vertical slice includes unit, integration, API, UI, tenant-isolation, and relevant end-to-end tests before the next slice begins.
+Each vertical slice receives proportionate unit, API, and UI verification. Add new integration and
+end-to-end tests when requested. Persistence changes still require tenant-isolation and RLS coverage.
 
 Critical test properties include:
 

@@ -230,10 +230,11 @@ refresh expiry requires login again.
 
 Stores tenant-owned, single-use invitations for joining an existing organization. Each row has an
 organization, selected membership role, creator, expiry, optional redeemer and redemption time, and
-a unique SHA-256 digest of a random 128-bit code. The raw code is shown only when issued and is
-shared manually by the administrator. Redemption atomically claims an unexpired, unused row in the
-same transaction as membership creation and session activation. RLS permits tenant-scoped
-administration and a narrow lookup and redemption policy matching the presented code digest.
+a unique SHA-256 digest of an eight-character Base32 code generated from 40 random bits. The raw
+code is shown only when issued and is shared manually by the administrator. Redemption atomically
+claims an unexpired, unused row in the same transaction as membership creation and session activation.
+RLS permits tenant-scoped administration and a narrow lookup and redemption policy matching the
+presented code digest.
 
 ### `user_organization_preferences`
 

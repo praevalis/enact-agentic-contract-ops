@@ -155,7 +155,7 @@ Respect reduced-motion preferences by removing positional movement and other non
 
 ## Usage and accessibility
 
-- Use Amber sparingly for the Enact mark and the main action in a view. Use Night text and a Night border on Amber-filled controls so the label and control boundary remain clear in both modes.
+- Use Amber sparingly for the Enact mark and the main action in a view. Use Night text on Amber-filled controls. The filled surface provides the control boundary without a contrasting border.
 - Do not use Amber for small text on White or Off-white. Amber and White have only 2.29:1 contrast.
 - Use Umber as a small provenance mark or restrained supporting element. Keep adjacent explanatory text in the mode's neutral text color.
 - Use the operational state colors for state markers alongside visible text labels, never as the sole carrier of meaning.
