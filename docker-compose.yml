@@ -8,7 +8,7 @@ services:
       ENACT_MIGRATE_PASSWORD: ${ENACT_MIGRATE_PASSWORD:-local-migrate-only}
       ENACT_APP_PASSWORD: ${ENACT_DATABASE_PASSWORD:-local-app-only}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./infra/postgres/bootstrap:/docker-entrypoint-initdb.d:ro

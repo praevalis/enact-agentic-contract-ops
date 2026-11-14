@@ -17,9 +17,7 @@ CREATE ROLE enact_app LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPL
 GRANT enact_owner TO enact_migrate;
 GRANT CONNECT ON DATABASE :"database_name" TO enact_migrate, enact_app;
 
-SET ROLE enact_owner;
 CREATE SCHEMA enact AUTHORIZATION enact_owner;
 REVOKE ALL ON SCHEMA enact FROM PUBLIC;
 GRANT USAGE ON SCHEMA enact TO enact_app;
-RESET ROLE;
 SQL

@@ -26,8 +26,6 @@ ALL_TABLES = ('organizations', 'users', *TENANT_TABLES)
 
 def upgrade() -> None:
     """Create identity, customer, case, and audit tables, grants, and tenant isolation."""
-    op.execute('CREATE EXTENSION IF NOT EXISTS pgcrypto')
-
     op.create_table(
         'organizations',
         sa.Column(
@@ -193,8 +191,8 @@ def upgrade() -> None:
         sa.CheckConstraint("case_type IN ('activation', 'amendment')", name='case_type'),
         sa.CheckConstraint(
             (
-                "status IN (''draft'', ''processing'', ''blocked'', ''ready'', "
-                "''completed'', ''failed'', ''cancelled'')"
+                "status IN ('draft', 'processing', 'blocked', 'ready', "
+                "'completed', 'failed', 'cancelled')"
             ),
             name='case_status',
         ),
