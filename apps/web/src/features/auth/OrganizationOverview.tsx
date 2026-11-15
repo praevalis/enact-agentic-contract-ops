@@ -2,6 +2,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 
 import { Button } from '../../components/ui/Button';
 import { InlineError } from '../../components/ui/InlineError';
+import { InvitationIssuer } from './InvitationIssuer';
 import { OrganizationPicker } from './OrganizationPicker';
 import { useSession, useSignOut } from './queries';
 
@@ -20,34 +21,13 @@ export function OrganizationOverview() {
 
     return (
         <main className="mx-auto max-w-6xl px-4 py-10 sm:px-8 lg:py-12">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-umber">
-                Your workspace
-            </p>
-            <h1 className="mb-3 text-3xl font-semibold">Organization</h1>
-            <p className="mb-8 text-base text-secondary-text">
-                Choose the organization you want to work in.
-            </p>
-            <OrganizationPicker
-                current={{
-                    organization: session.data.organization,
-                    membership: session.data.membership,
-                }}
-            />
-            <div className="rounded-lg bg-inset p-6">
-                <p className="text-sm text-secondary-text">Signed in as</p>
-                <p className="mt-1 font-semibold">
-                    {session.data.user.display_name}
+            <div className="mb-3 flex items-center justify-between gap-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-umber">
+                    Your workspace
                 </p>
-                <p className="text-sm text-secondary-text">
-                    {session.data.user.email}
-                </p>
-                <p className="mt-4 text-sm">
-                    {session.data.membership?.role.replaceAll('_', ' ')}
-                </p>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-4">
                 <Button
-                    variant="secondary"
+                    variant="quiet"
+                    size="small"
                     disabled={signOut.isPending}
                     onClick={() =>
                         signOut.mutate(undefined, {
@@ -59,10 +39,34 @@ export function OrganizationOverview() {
                     {signOut.isPending ? 'Signing out…' : 'Sign out'}
                 </Button>
             </div>
+            <h1 className="mb-3 text-3xl font-semibold">Organization</h1>
+            <p className="mb-8 text-base text-secondary-text">
+                Choose the organization you want to work in.
+            </p>
             {signOut.isError && (
-                <InlineError className="mt-4">
+                <InlineError className="mb-4">
                     Sign-out could not be completed. Try again.
                 </InlineError>
+            )}
+            <OrganizationPicker
+                current={{
+                    organization: session.data.organization,
+                    membership: session.data.membership,
+                }}
+            />
+            {session.data.membership.role === 'administrator' && (
+                <section aria-labelledby="people-heading" className="mb-12">
+                    <h2 id="people-heading" className="text-xl font-semibold">
+                        People &amp; access
+                    </h2>
+                    <p className="mb-5 text-sm text-secondary-text">
+                        Invite teammates to work in this organization.
+                    </p>
+                    <InvitationIssuer
+                        key={session.data.organization.id}
+                        organizationId={session.data.organization.id}
+                    />
+                </section>
             )}
         </main>
     );

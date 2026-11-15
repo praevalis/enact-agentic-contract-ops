@@ -47,6 +47,8 @@ Light surfaces remain close to white. Dark surfaces remain close to Night. Surfa
 
 These colors indicate operational meaning, not brand identity. Always pair status color with a visible text label. Do not use Amber as the Needs review or Processing status color.
 
+Membership role selectors are a narrow exception to the operational use of these hues. Pair each role's small decorative dot with its visible role name and use a separate checkmark for selection. Use Steel blue for Administrator, Green for Deal desk, Muted violet for Operations reviewer, and the mode's secondary neutral text color for Auditor. Do not use Amber or Umber for role dots. Role descriptions use at least the 12 px supporting-text size.
+
 ## Mode assignments
 
 | Role | Light mode | Dark mode |
@@ -110,6 +112,8 @@ Use Tailwind's 4 px spacing unit as the foundation. The 6 and 10 px half steps a
 
 Page gutters grow from 16 px on narrow screens to 32 px on medium screens and 48 px on wide screens (`px-4 sm:px-8 lg:px-12`). Use matching top and bottom padding of 40 px through medium screens and 48 px on wide screens (`py-10 lg:py-12`). The medium breakpoint increases horizontal space while preserving the vertical rhythm.
 
+Buttons have small, medium, and large sizes with minimum heights of 36, 44, and 48 px. Medium is the default. Use small for compact actions in dense rows, such as the Team members header, while keeping the larger sizes for primary form actions.
+
 Use the smaller steps within a single idea, such as a label and its field or a value and its source. Use the larger steps when attention moves to another section or stage. Apply each boundary's spacing once, through a parent gap or a sibling margin, so nested layouts do not add both. Avoid section-sized gaps inside tables, case records, or dense evidence views.
 
 ## Section composition
@@ -123,6 +127,8 @@ Choose border radius according to each component's role and size. Use slight rou
 ## Interaction states
 
 Use small changes in surface tone and elevation for pointer feedback. Keep component borders stable across hover, press, and selection. In dark mode, surface tone carries more of the distinction where a shadow would be difficult to see.
+
+Use a raised surface and low-emphasis control boundary for an important secondary button on an inset surface. Keep quiet actions visually lighter.
 
 | State | Treatment |
 |---|---|

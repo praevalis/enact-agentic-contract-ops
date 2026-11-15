@@ -8,6 +8,7 @@ import {
 import { apiSession } from '../../api/session';
 import type {
     LoginInput,
+    MembershipRole,
     OrganizationContext,
     Principal,
     RegistrationInput,
@@ -153,6 +154,37 @@ export function useSwitchOrganization() {
                 queryKey: organizationsQueryKey,
             });
         },
+    });
+}
+
+/**
+ * Issues a one-time invitation code in the selected organization.
+ *
+ * @returns A mutation containing the code and its expiry.
+ */
+export function useIssueInvitation() {
+    return useMutation({
+        mutationFn: async ({
+            organizationId,
+            role,
+        }: {
+            organizationId: string;
+            role: MembershipRole;
+        }) => {
+            const result = await apiSession.client.POST(
+                '/api/v1/organizations/{organization_id}/invitations',
+                {
+                    params: { path: { organization_id: organizationId } },
+                    body: { role },
+                },
+            );
+            if (!result.data) {
+                throw apiErrorFrom(result.response, result.error);
+            }
+
+            return result.data;
+        },
+        gcTime: 0,
     });
 }
 

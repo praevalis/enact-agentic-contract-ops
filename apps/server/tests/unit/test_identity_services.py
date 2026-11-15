@@ -23,6 +23,7 @@ from enact.identity.errors import (
     InvalidCredentialsError,
     InvalidInvitationCodeError,
     InvalidRefreshTokenError,
+    MembershipPermissionDeniedError,
 )
 from enact.identity.repositories import (
     AuthSessionRepository,
@@ -777,3 +778,26 @@ class TestOnboardingService:
                 session_id=another.session.id,
                 code=issued.code,
             )
+
+    async def test_non_administrator_cannot_issue_invitation(self) -> None:
+        """Reject code issuance before creating an invitation or audit event."""
+        _, _, uow, _, _, actor, organization = _service_fixture(datetime.now(UTC))
+        uow.memberships = cast(
+            MembershipRepository,
+            _Memberships(Membership(uuid4(), actor.id, organization.id, 'deal_desk', 'active')),
+        )
+        onboarding = OnboardingService(
+            uow=cast(IdentityUnitOfWork, uow),
+            access_token_codec=AccessTokenCodec('test-secret-with-at-least-32-bytes!!'),
+            access_token_lifetime=timedelta(minutes=5),
+        )
+
+        with pytest.raises(MembershipPermissionDeniedError):
+            await onboarding.issue_invitation(
+                actor_user_id=actor.id,
+                organization_id=organization.id,
+                role=MembershipRole.AUDITOR,
+            )
+
+        assert uow.invitations.invitations == []
+        assert uow.audit_events.actions == []

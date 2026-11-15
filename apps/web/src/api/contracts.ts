@@ -10,3 +10,4 @@ export type OrganizationContext =
 export type OrganizationMembership =
     components['schemas']['OrganizationMembershipRead'];
 export type ValidationIssue = components['schemas']['ValidationIssueRead'];
+export type MembershipRole = components['schemas']['MembershipRole'];
