@@ -12,7 +12,7 @@ from enact.identity.errors import (
     OrganizationNotFoundError,
     UserNotFoundError,
 )
-from enact.identity.schemas import LoginCreate
+from enact.identity.schemas import LoginCreate, OrganizationCreate, UserCreate
 from pydantic import ValidationError
 
 
@@ -37,6 +37,26 @@ class TestIdentitySchemas:
         credentials = LoginCreate(email='  USER@Example.COM ', password='secret')
 
         assert str(credentials.email) == 'user@example.com'
+
+    def test_registration_normalizes_display_name(self) -> None:
+        account = UserCreate(
+            email='user@example.com', password='password123', display_name='  Morgan Lee  '
+        )
+
+        assert account.display_name == 'Morgan Lee'
+
+    def test_registration_rejects_whitespace_only_display_name(self) -> None:
+        with pytest.raises(ValidationError):
+            UserCreate(email='user@example.com', password='password123', display_name='   ')
+
+    def test_organization_normalizes_name(self) -> None:
+        organization = OrganizationCreate(name='  Acme Cloud  ')
+
+        assert organization.name == 'Acme Cloud'
+
+    def test_organization_rejects_whitespace_only_name(self) -> None:
+        with pytest.raises(ValidationError):
+            OrganizationCreate(name='   ')
 
 
 @pytest.mark.unit

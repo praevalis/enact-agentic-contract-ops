@@ -2,17 +2,13 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import { ApiError } from '../../api/errors';
+import { fieldError } from '../../utils/fieldErrors';
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/FormField';
-import { AuthShell, FormError } from './AuthShell';
-import { fieldError } from './fieldErrors';
+import { FormError } from '../../components/ui/FormError';
+import { AuthShell } from './AuthShell';
 import { useRegistration, useSession } from './queries';
 
-/**
- * Creates a local account before organization setup.
- *
- * @returns The registration form or an authenticated redirect.
- */
 export function Register() {
     const session = useSession();
     const registration = useRegistration();
@@ -20,6 +16,8 @@ export function Register() {
     const [displayName, setDisplayName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordFocused, setPasswordFocused] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     if (session.data) {
         return (
@@ -30,13 +28,13 @@ export function Register() {
         );
     }
 
-    /**
-     * Submits account details and opens organization setup on success.
-     *
-     * @param event - Native form submission.
-     */
     function handleSubmit(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
+        setSubmitted(true);
+
+        if (!displayName.trim() || !email.trim() || !password) {
+            return;
+        }
 
         registration.mutate(
             { display_name: displayName, email, password },
@@ -47,11 +45,44 @@ export function Register() {
     const duplicateEmail =
         registration.error instanceof ApiError &&
         registration.error.code === 'user_email_already_exists';
-    const nameError = fieldError(registration.error, 'display_name');
-    const emailError = duplicateEmail
-        ? 'An account already uses this email address.'
-        : fieldError(registration.error, 'email');
-    const passwordError = fieldError(registration.error, 'password');
+    const issues =
+        registration.error instanceof ApiError
+            ? registration.error.issues
+            : undefined;
+    const submittedName = registration.variables?.display_name === displayName;
+    const submittedEmail = registration.variables?.email === email;
+    const submittedPassword = registration.variables?.password === password;
+    const nameError =
+        submitted && !displayName.trim()
+            ? 'Enter your name.'
+            : submittedName
+              ? fieldError(issues, ['body', 'display_name'], {
+                    required: 'Enter your name.',
+                    too_short: 'Enter your name.',
+                    too_long: 'Use a shorter name.',
+                })
+              : undefined;
+    const emailError =
+        submitted && !email.trim()
+            ? 'Enter your work email.'
+            : submittedEmail && duplicateEmail
+              ? 'An account already uses this email address.'
+              : submittedEmail
+                ? fieldError(issues, ['body', 'email'], {
+                      required: 'Enter your work email.',
+                      invalid: 'Enter a valid work email address.',
+                  })
+                : undefined;
+    const passwordError =
+        submitted && !password
+            ? 'Create a password.'
+            : submittedPassword
+              ? fieldError(issues, ['body', 'password'], {
+                    required: 'Create a password.',
+                    too_short: 'Use at least 8 characters.',
+                    too_long: 'Use a shorter password.',
+                })
+              : undefined;
 
     return (
         <AuthShell
@@ -61,7 +92,11 @@ export function Register() {
             asideTitle="Start with an account. Add your team next."
             asideText="Organization access is granted only after you create a workspace or redeem an invitation code."
         >
-            <form onSubmit={handleSubmit} className="grid gap-4">
+            <form
+                noValidate
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-4"
+            >
                 <FormField
                     label="Your name"
                     autoComplete="name"
@@ -86,12 +121,21 @@ export function Register() {
                     autoComplete="new-password"
                     required
                     minLength={8}
-                    hint="At least 8 characters."
+                    hint={
+                        passwordFocused && !passwordError
+                            ? 'At least 8 characters.'
+                            : undefined
+                    }
                     error={passwordError}
                     value={password}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
                     onChange={(event) => setPassword(event.target.value)}
                 />
                 {registration.isError &&
+                    submittedName &&
+                    submittedEmail &&
+                    submittedPassword &&
                     !nameError &&
                     !emailError &&
                     !passwordError && (

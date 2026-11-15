@@ -51,7 +51,9 @@ class UserCreate(BaseWrite):
 
     email: Annotated[EmailStr, StringConstraints(strip_whitespace=True, to_lower=True)]
     password: str = Field(min_length=8, max_length=1024)
-    display_name: str = Field(min_length=1, max_length=200)
+    display_name: Annotated[
+        str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)
+    ]
 
 
 class TokenRead(BaseRead):
@@ -81,7 +83,7 @@ class PrincipalRead(BaseRead):
 class OrganizationCreate(BaseWrite):
     """Organization details supplied during account onboarding."""
 
-    name: str = Field(min_length=1, max_length=200)
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 
 
 class OrganizationJoinCreate(BaseWrite):

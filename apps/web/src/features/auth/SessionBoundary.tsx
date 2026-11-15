@@ -3,11 +3,6 @@ import { Outlet } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { useSession } from './queries';
 
-/**
- * Waits for cookie restoration before auth routes decide where to navigate.
- *
- * @returns Auth routes, a loading state, or a retryable session error.
- */
 export function SessionBoundary() {
     const session = useSession();
 

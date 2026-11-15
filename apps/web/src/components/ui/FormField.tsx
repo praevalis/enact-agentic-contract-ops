@@ -1,6 +1,7 @@
 import { useId } from 'react';
 
 import { Input, type InputProps } from './Input';
+import { InlineError } from './InlineError';
 
 export interface FormFieldProps extends Omit<InputProps, 'invalid'> {
     label: string;
@@ -8,12 +9,6 @@ export interface FormFieldProps extends Omit<InputProps, 'invalid'> {
     error?: string;
 }
 
-/**
- * Associates a visible label, hint, and validation error with an input.
- *
- * @param props - Input attributes and field guidance.
- * @returns A labeled input with accessible descriptions.
- */
 export function FormField({
     label,
     hint,
@@ -30,7 +25,7 @@ export function FormField({
         .join(' ');
 
     return (
-        <div className="grid gap-1.5">
+        <div className="flex flex-col gap-1.5">
             <label htmlFor={fieldId} className="text-sm font-medium">
                 {label}
             </label>
@@ -45,15 +40,7 @@ export function FormField({
                     {hint}
                 </p>
             )}
-            {error && (
-                <p
-                    id={errorId}
-                    role="alert"
-                    className="text-sm text-status-danger"
-                >
-                    Error: {error}
-                </p>
-            )}
+            {error && <InlineError id={errorId}>{error}</InlineError>}
         </div>
     );
 }

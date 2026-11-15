@@ -1,6 +1,7 @@
 """Map application errors to stable HTTP responses."""
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from enact.cases.errors import CaseError, CaseNotFoundError, PriorCaseNotFoundError
@@ -22,6 +23,8 @@ from enact.identity.errors import (
     UserNotFoundError,
 )
 
+from .validation import parse_request_validation
+
 
 def register_error_handlers(app: FastAPI) -> None:
     """Install HTTP mappings for expected application failures.
@@ -29,6 +32,13 @@ def register_error_handlers(app: FastAPI) -> None:
     Args:
         app: FastAPI application receiving the handlers.
     """
+
+    @app.exception_handler(RequestValidationError)
+    async def handle_request_validation(
+        _request: Request, error: RequestValidationError
+    ) -> JSONResponse:
+        response = parse_request_validation(error)
+        return JSONResponse(status_code=422, content=response.model_dump())
 
     @app.exception_handler(IdentityError)
     async def handle_identity_error(_request: Request, error: IdentityError) -> JSONResponse:

@@ -3,22 +3,19 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/FormField';
+import { FormError } from '../../components/ui/FormError';
 import { ApiError } from '../../api/errors';
-import { AuthShell, FormError } from './AuthShell';
-import { fieldError } from './fieldErrors';
+import { fieldError } from '../../utils/fieldErrors';
+import { AuthShell } from './AuthShell';
 import { useLogin, useSession } from './queries';
 
-/**
- * Authenticates an account and routes it to its organization context.
- *
- * @returns The sign-in form or an authenticated redirect.
- */
 export function SignIn() {
     const session = useSession();
     const login = useLogin();
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [submitted, setSubmitted] = useState(false);
 
     if (session.data) {
         return (
@@ -29,13 +26,13 @@ export function SignIn() {
         );
     }
 
-    /**
-     * Submits local credentials without discarding values after a recoverable failure.
-     *
-     * @param event - Native form submission.
-     */
     function handleSubmit(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
+        setSubmitted(true);
+
+        if (!email.trim() || !password) {
+            return;
+        }
 
         login.mutate(
             { email, password },
@@ -54,8 +51,28 @@ export function SignIn() {
     const invalidCredentials =
         login.error instanceof ApiError &&
         login.error.code === 'invalid_credentials';
-    const emailError = fieldError(login.error, 'email');
-    const passwordError = fieldError(login.error, 'password');
+    const issues =
+        login.error instanceof ApiError ? login.error.issues : undefined;
+    const submittedEmail = login.variables?.email === email;
+    const submittedPassword = login.variables?.password === password;
+    const emailError =
+        submitted && !email.trim()
+            ? 'Enter your work email.'
+            : submittedEmail
+              ? fieldError(issues, ['body', 'email'], {
+                    required: 'Enter your work email.',
+                    invalid: 'Enter a valid work email address.',
+                })
+              : undefined;
+    const passwordError =
+        submitted && !password
+            ? 'Enter your password.'
+            : submittedPassword
+              ? fieldError(issues, ['body', 'password'], {
+                    required: 'Enter your password.',
+                    too_short: 'Enter your password.',
+                })
+              : undefined;
 
     return (
         <AuthShell
@@ -65,7 +82,11 @@ export function SignIn() {
             asideTitle="From signed agreement to verified change."
             asideText="Keep contract intent, operational decisions, and the resulting state connected in one workspace."
         >
-            <form onSubmit={handleSubmit} className="grid gap-4">
+            <form
+                noValidate
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-4"
+            >
                 <FormField
                     label="Work email"
                     type="email"
@@ -84,13 +105,17 @@ export function SignIn() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                 />
-                {login.isError && !emailError && !passwordError && (
-                    <FormError>
-                        {invalidCredentials
-                            ? 'Email or password was not recognized. Check your details and try again.'
-                            : 'Sign-in could not be completed. Try again.'}
-                    </FormError>
-                )}
+                {login.isError &&
+                    submittedEmail &&
+                    submittedPassword &&
+                    !emailError &&
+                    !passwordError && (
+                        <FormError>
+                            {invalidCredentials
+                                ? 'Email or password was not recognized. Check your details and try again.'
+                                : 'Sign-in could not be completed. Try again.'}
+                        </FormError>
+                    )}
                 <Button
                     variant="primary"
                     type="submit"

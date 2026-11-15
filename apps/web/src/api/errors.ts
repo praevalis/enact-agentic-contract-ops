@@ -1,14 +1,43 @@
+import type { ValidationIssue } from './contracts';
+
 /** A failed API request with a stable code. */
 export class ApiError extends Error {
     constructor(
         public readonly status: number,
         public readonly code: string,
         message: string,
-        public readonly detail?: unknown,
+        public readonly issues?: ValidationIssue[],
     ) {
         super(message);
         this.name = 'ApiError';
     }
+}
+
+/**
+ * Checks one untrusted validation issue against the generated API contract.
+ *
+ * @param value - Parsed issue from an error response.
+ * @returns Whether the issue has an allowed code, location, and message.
+ */
+function isValidationIssue(value: unknown): value is ValidationIssue {
+    if (typeof value !== 'object' || value === null) {
+        return false;
+    }
+
+    if (!('location' in value) || !('code' in value) || !('message' in value)) {
+        return false;
+    }
+
+    return (
+        typeof value.code === 'string' &&
+        ['required', 'too_short', 'too_long', 'invalid'].includes(value.code) &&
+        Array.isArray(value.location) &&
+        value.location.every(
+            (part: unknown) =>
+                typeof part === 'string' || typeof part === 'number',
+        ) &&
+        typeof value.message === 'string'
+    );
 }
 
 /**
@@ -24,17 +53,15 @@ export function apiErrorFrom(response: Response, body: unknown): ApiError {
             const { code, message } = body;
 
             if (typeof code === 'string' && typeof message === 'string') {
-                return new ApiError(response.status, code, message);
-            }
-        }
+                const issues =
+                    'issues' in body &&
+                    Array.isArray(body.issues) &&
+                    body.issues.every(isValidationIssue)
+                        ? body.issues
+                        : undefined;
 
-        if (response.status === 422 && 'detail' in body) {
-            return new ApiError(
-                response.status,
-                'validation_error',
-                'Check the submitted fields.',
-                body.detail,
-            );
+                return new ApiError(response.status, code, message, issues);
+            }
         }
     }
 

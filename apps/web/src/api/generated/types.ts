@@ -583,11 +583,6 @@ export interface components {
              */
             updated_at: string;
         };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
         /**
          * HealthRead
          * @description Health status returned by operational probes.
@@ -784,18 +779,39 @@ export interface components {
             /** Status */
             status: string;
         };
-        /** ValidationError */
-        ValidationError: {
-            /** Context */
-            ctx?: Record<string, never>;
-            /** Input */
-            input?: unknown;
+        /**
+         * ValidationErrorRead
+         * @description Stable API response for request validation failures.
+         */
+        ValidationErrorRead: {
+            /**
+             * Code
+             * @default validation_error
+             * @constant
+             */
+            code: "validation_error";
+            /** Issues */
+            issues: components["schemas"]["ValidationIssueRead"][];
+            /**
+             * Message
+             * @default The request contains invalid values.
+             */
+            message: string;
+        };
+        /**
+         * ValidationIssueRead
+         * @description One invalid value at a location in the HTTP request.
+         */
+        ValidationIssueRead: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "required" | "too_short" | "too_long" | "invalid";
             /** Location */
-            loc: (string | number)[];
+            location: (string | number)[];
             /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
+            message: string;
         };
     };
     responses: never;
@@ -828,13 +844,13 @@ export interface operations {
                     "application/json": components["schemas"]["PrincipalRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -854,6 +870,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
+                };
             };
         };
     };
@@ -877,13 +902,13 @@ export interface operations {
                     "application/json": components["schemas"]["PrincipalRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -910,13 +935,13 @@ export interface operations {
                     "application/json": components["schemas"]["PrincipalRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -945,13 +970,13 @@ export interface operations {
                     "application/json": components["schemas"]["CaseListRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -978,13 +1003,13 @@ export interface operations {
                     "application/json": components["schemas"]["CaseRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1009,13 +1034,13 @@ export interface operations {
                     "application/json": components["schemas"]["CaseRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1043,13 +1068,13 @@ export interface operations {
                     "application/json": components["schemas"]["CustomerListRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1076,13 +1101,13 @@ export interface operations {
                     "application/json": components["schemas"]["CustomerRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1105,6 +1130,15 @@ export interface operations {
                     "application/json": components["schemas"]["HealthRead"];
                 };
             };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
+                };
+            };
         };
     };
     read_readiness_api_v1_health_ready_get: {
@@ -1123,6 +1157,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthRead"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1149,13 +1192,13 @@ export interface operations {
                     "application/json": components["schemas"]["OrganizationContextRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1182,13 +1225,13 @@ export interface operations {
                     "application/json": components["schemas"]["OrganizationContextRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1217,13 +1260,13 @@ export interface operations {
                     "application/json": components["schemas"]["OrganizationInvitationRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1244,6 +1287,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserRead"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1270,13 +1322,13 @@ export interface operations {
                     "application/json": components["schemas"]["OrganizationContextRead"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Unprocessable Content */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };
@@ -1297,6 +1349,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrganizationMembershipRead"][];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
                 };
             };
         };

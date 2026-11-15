@@ -212,10 +212,13 @@ describe('ApiSession', () => {
         const session = new ApiSession('http://localhost:8000', async () =>
             json(
                 {
-                    detail: [
+                    code: 'validation_error',
+                    message: 'The request contains invalid values.',
+                    issues: [
                         {
-                            loc: ['body', 'email'],
-                            msg: 'Invalid email address.',
+                            location: ['body', 'email'],
+                            code: 'invalid',
+                            message: 'Enter a valid value.',
                         },
                     ],
                 },
@@ -231,7 +234,13 @@ describe('ApiSession', () => {
             }),
         ).rejects.toMatchObject({
             code: 'validation_error',
-            detail: [{ loc: ['body', 'email'], msg: 'Invalid email address.' }],
+            issues: [
+                {
+                    location: ['body', 'email'],
+                    code: 'invalid',
+                    message: 'Enter a valid value.',
+                },
+            ],
         });
     });
 });

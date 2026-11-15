@@ -6,8 +6,9 @@ from enact.api.health import router as health_router
 from enact.api.identity.auth_routes import router as auth_router
 from enact.api.identity.organization_routes import router as organizations_router
 from enact.api.identity.user_routes import router as users_router
+from enact.api.validation import ValidationErrorRead
 
-router = APIRouter(prefix='/v1')
+router = APIRouter(prefix='/v1', responses={422: {'model': ValidationErrorRead}})
 router.include_router(health_router)
 router.include_router(auth_router)
 router.include_router(customers_router)

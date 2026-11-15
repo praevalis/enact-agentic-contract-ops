@@ -29,6 +29,7 @@ This file extends the repository-level `AGENTS.md` for work under `apps/web`.
 ## Function documentation
 
 - Add concise JSDoc to exported functions, classes, and public methods. Document non-obvious private methods and security-sensitive behavior. Constructors do not need separate JSDoc.
+- Do not add JSDoc to React components or nested functions. Document top-level non-React functions and public methods when the rules above apply.
 - Include `@param` for parameters, `@returns` for returned values and async functions, and plain-language `@throws` descriptions when callers need to handle a defined failure. Omit tags that do not apply.
 - Keep generated API contract aliases in a dedicated contracts file when multiple aliases serve a runtime module or feature.
 - Keep documentation focused on behavior and invariants rather than restating the function name or narrating each statement.
@@ -79,6 +80,7 @@ This file extends the repository-level `AGENTS.md` for work under `apps/web`.
 ## Components and accessibility
 
 - Use semantic HTML before adding ARIA attributes.
+- Prefer canonical Tailwind spacing and breakpoints. Use flex or grid for layout, and reserve measured positioning for overlays that must respond to viewport edges.
 - Every interactive control must be keyboard accessible and have an accessible name.
 - Associate form fields with visible labels and expose validation errors accessibly.
 - Preserve focus intentionally across dialogs, navigation, validation failures, and asynchronous mutations.
@@ -90,6 +92,7 @@ This file extends the repository-level `AGENTS.md` for work under `apps/web`.
 
 - Keep authoritative business validation on the server.
 - Client-side validation may provide immediate feedback but must not redefine server rules.
+- Keep errors for unchanged submitted fields visible when another field is edited. Clear or replace an error when its own value changes or a new submission resolves it.
 - Display field-level errors near their controls and case-level failures in an appropriate summary.
 - Preserve user input after recoverable submission failures.
 - Prevent duplicate submissions while a mutation is pending.

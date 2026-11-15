@@ -9,12 +9,6 @@ interface AuthShellProps {
     children: ReactNode;
 }
 
-/**
- * Frames the account and organization setup forms.
- *
- * @param props - Form copy, supporting copy, and form content.
- * @returns The responsive auth layout.
- */
 export function AuthShell({
     eyebrow,
     title,
@@ -24,10 +18,10 @@ export function AuthShell({
     children,
 }: AuthShellProps) {
     return (
-        <main className="grid min-h-screen min-[851px]:grid-cols-[minmax(340px,47%)_1fr]">
-            <div className="flex items-center px-6 py-12 sm:px-12 min-[851px]:px-[clamp(24px,5vw,72px)]">
-                <div className="mx-auto w-full max-w-[400px]">
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.13em] text-umber">
+        <main className="flex min-h-screen flex-col lg:flex-row">
+            <div className="flex min-w-0 items-center px-4 py-10 sm:px-8 lg:flex-1 lg:px-12 lg:py-12">
+                <div className="mx-auto w-full max-w-sm">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-umber">
                         {eyebrow}
                     </p>
                     <h1 className="mb-3 text-3xl font-semibold leading-9 tracking-tight">
@@ -39,16 +33,16 @@ export function AuthShell({
                     {children}
                 </div>
             </div>
-            <aside className="flex min-h-56 flex-col justify-center bg-night px-8 py-12 text-white min-[851px]:px-[clamp(32px,6vw,88px)]">
+            <aside className="flex min-h-56 min-w-0 flex-col justify-center bg-night px-4 py-10 text-white sm:px-8 lg:flex-1 lg:px-12 lg:py-12">
                 <div
                     aria-hidden="true"
                     className="mb-8 flex items-center gap-3"
                 >
-                    <span className="h-[9px] w-20 rounded-sm bg-amber" />
-                    <span className="h-[9px] w-11 rounded-sm bg-off-white" />
-                    <span className="h-[9px] w-28 rounded-sm bg-amber" />
+                    <span className="h-2 w-20 rounded-sm bg-amber" />
+                    <span className="h-2 w-11 rounded-sm bg-off-white" />
+                    <span className="h-2 w-28 rounded-sm bg-amber" />
                 </div>
-                <h2 className="mb-4 max-w-xl text-[26px] font-semibold leading-tight tracking-tight min-[851px]:text-[clamp(28px,3.4vw,48px)]">
+                <h2 className="mb-4 max-w-xl text-2xl font-semibold leading-tight tracking-tight lg:text-5xl">
                     {asideTitle}
                 </h2>
                 <p className="max-w-lg text-base leading-6 text-steel">
@@ -56,24 +50,5 @@ export function AuthShell({
                 </p>
             </aside>
         </main>
-    );
-}
-
-interface FormErrorProps {
-    children: ReactNode;
-}
-
-/**
- * Announces an auth flow failure beside its form.
- *
- * @param props - Recoverable error guidance.
- * @returns A visible, announced error notice.
- */
-export function FormError({ children }: FormErrorProps) {
-    return (
-        <div role="alert" className="rounded-lg bg-inset px-4 py-3 text-sm">
-            <p className="mb-1 font-semibold text-status-danger">Error</p>
-            <p>{children}</p>
-        </div>
     );
 }

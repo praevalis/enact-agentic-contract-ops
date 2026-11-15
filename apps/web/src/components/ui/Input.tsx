@@ -22,12 +22,6 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     invalid?: boolean;
 }
 
-/**
- * Renders a native input with a visibility control for password fields.
- *
- * @param props - Native input attributes and invalid state.
- * @returns An input with accessible invalid semantics.
- */
 export function Input({
     invalid = false,
     className,
@@ -68,7 +62,7 @@ export function Input({
                 className="absolute inset-y-0 right-1 flex min-w-11 items-center justify-center rounded-md text-secondary-text hover:text-primary-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60"
             >
                 <VisibilityIcon
-                    size={20}
+                    className="size-5"
                     aria-hidden="true"
                     focusable="false"
                 />

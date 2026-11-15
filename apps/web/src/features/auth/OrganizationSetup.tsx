@@ -2,20 +2,16 @@ import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { ApiError } from '../../api/errors';
+import { fieldError } from '../../utils/fieldErrors';
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/FormField';
+import { FormError } from '../../components/ui/FormError';
 import { cn } from '../../utils/cn';
-import { AuthShell, FormError } from './AuthShell';
-import { fieldError } from './fieldErrors';
+import { AuthShell } from './AuthShell';
 import { useOrganizationSetup, useSession } from './queries';
 
 type Choice = 'create' | 'join';
 
-/**
- * Creates a team or redeems an administrator-issued invitation code.
- *
- * @returns The organization setup form or a sign-in redirect.
- */
 export function OrganizationSetup() {
     const session = useSession();
     const setup = useOrganizationSetup();
@@ -23,18 +19,19 @@ export function OrganizationSetup() {
     const [choice, setChoice] = useState<Choice>('create');
     const [name, setName] = useState('');
     const [code, setCode] = useState('');
+    const [submitted, setSubmitted] = useState(false);
 
     if (!session.data) {
         return <Navigate to="/sign-in" replace />;
     }
 
-    /**
-     * Applies the selected organization setup action.
-     *
-     * @param event - Native form submission.
-     */
     function handleSubmit(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
+        setSubmitted(true);
+
+        if (choice === 'create' ? !name.trim() : !code.trim()) {
+            return;
+        }
 
         setup.mutate(
             choice === 'create'
@@ -47,12 +44,37 @@ export function OrganizationSetup() {
     const invalidCode =
         setup.error instanceof ApiError &&
         setup.error.code === 'invalid_invitation_code';
-    const currentFieldError =
-        choice === 'create'
-            ? fieldError(setup.error, 'name')
-            : invalidCode
-              ? 'This code is invalid, expired, or already used.'
-              : fieldError(setup.error, 'code');
+    const issues =
+        setup.error instanceof ApiError ? setup.error.issues : undefined;
+    const submittedChoice = setup.variables?.kind === choice;
+    const submittedName =
+        setup.variables?.kind === 'create' && setup.variables.name === name;
+    const submittedCode =
+        setup.variables?.kind === 'join' && setup.variables.code === code;
+    let currentFieldError: string | undefined;
+
+    if (choice === 'create') {
+        currentFieldError =
+            submitted && !name.trim()
+                ? 'Enter an organization name.'
+                : submittedName
+                  ? fieldError(issues, ['body', 'name'], {
+                        required: 'Enter an organization name.',
+                        too_short: 'Enter an organization name.',
+                        too_long: 'Use a shorter organization name.',
+                    })
+                  : undefined;
+    } else if (submitted && !code.trim()) {
+        currentFieldError = 'Enter an invitation code.';
+    } else if (submittedCode && invalidCode) {
+        currentFieldError = 'This code is invalid, expired, or already used.';
+    } else if (submittedCode) {
+        currentFieldError = fieldError(issues, ['body', 'code'], {
+            required: 'Enter an invitation code.',
+            too_short: 'Enter an invitation code.',
+            too_long: 'Check the invitation code and try again.',
+        });
+    }
 
     return (
         <AuthShell
@@ -62,7 +84,7 @@ export function OrganizationSetup() {
             asideTitle="Your work stays within its organization."
             asideText="Choose your team before opening cases or reviewing operational data."
         >
-            <fieldset className="mb-5 grid grid-cols-2 gap-3">
+            <fieldset className="mb-5 grid gap-3 sm:grid-cols-2">
                 <legend className="sr-only">
                     Choose how to join a workspace
                 </legend>
@@ -74,6 +96,7 @@ export function OrganizationSetup() {
                     checked={choice === 'create'}
                     onChange={() => {
                         setChoice('create');
+                        setSubmitted(false);
                         setup.reset();
                     }}
                 />
@@ -104,6 +127,7 @@ export function OrganizationSetup() {
                     checked={choice === 'join'}
                     onChange={() => {
                         setChoice('join');
+                        setSubmitted(false);
                         setup.reset();
                     }}
                 />
@@ -127,7 +151,11 @@ export function OrganizationSetup() {
                     )}
                 </label>
             </fieldset>
-            <form onSubmit={handleSubmit} className="grid gap-5">
+            <form
+                noValidate
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-5"
+            >
                 {choice === 'create' ? (
                     <FormField
                         label="Organization name"
@@ -149,12 +177,15 @@ export function OrganizationSetup() {
                         onChange={(event) => setCode(event.target.value)}
                     />
                 )}
-                {setup.isError && !currentFieldError && (
-                    <FormError>
-                        Organization setup could not be completed. Check your
-                        details and try again.
-                    </FormError>
-                )}
+                {setup.isError &&
+                    submittedChoice &&
+                    (choice === 'create' ? submittedName : submittedCode) &&
+                    !currentFieldError && (
+                        <FormError>
+                            Organization setup could not be completed. Check
+                            your details and try again.
+                        </FormError>
+                    )}
                 <Button
                     variant="primary"
                     type="submit"
