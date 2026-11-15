@@ -19,7 +19,7 @@ services:
       retries: 10
 
   object-store:
-    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image: pgsty/silo:RELEASE.2026-11-09T00-00-00Z
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-enact-local}
@@ -36,13 +36,13 @@ services:
       retries: 10
 
   object-store-init:
-    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    image: pgsty/silo:RELEASE.2026-11-09T00-00-00Z
     entrypoint:
       - /bin/sh
       - -c
       - >-
-        mc alias set local http://object-store:9000 "$${MINIO_ROOT_USER}"
-        "$${MINIO_ROOT_PASSWORD}" && mc mb --ignore-existing
+        mcli alias set local http://object-store:9000 "$${MINIO_ROOT_USER}"
+        "$${MINIO_ROOT_PASSWORD}" && mcli mb --ignore-existing
         "local/$${ENACT_OBJECT_STORAGE_BUCKET}"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-enact-local}

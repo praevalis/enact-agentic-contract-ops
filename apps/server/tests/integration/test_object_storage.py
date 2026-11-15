@@ -14,7 +14,7 @@ from enact.infrastructure.object_storage import (
 from testcontainers.core.container import DockerContainer
 from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 
-MINIO_IMAGE = 'quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z'
+MINIO_IMAGE = 'pgsty/silo:RELEASE.2026-11-09T00-00-00Z'
 MINIO_ACCESS_KEY = 'test-access-key'
 MINIO_SECRET_KEY = 'test-secret-key'
 MINIO_BUCKET = 'enact-test-documents'
