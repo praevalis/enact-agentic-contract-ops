@@ -5,7 +5,7 @@ import { apiErrorFrom } from '../../api/errors';
 import { apiSession } from '../../api/session';
 import { organizationsQueryKey, sessionQueryKey } from './queries';
 
-export const memberPageSize = 3;
+export const memberPageSize = 10;
 
 /**
  * Names a member page within one organization context.

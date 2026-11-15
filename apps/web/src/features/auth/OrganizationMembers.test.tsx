@@ -11,34 +11,20 @@ afterEach(() => {
 });
 
 test('shows active-member count and moves between cursor pages', async () => {
-    vi.spyOn(apiSession.client, 'GET')
+    const firstPage = Array.from({ length: 10 }, (_, index) => ({
+        id: `member-${index + 1}`,
+        user_id: `user-${index + 1}`,
+        display_name: index === 0 ? 'Morgan Lee' : `Member ${index + 1}`,
+        email: `member-${index + 1}@example.com`,
+        role: 'deal_desk' as const,
+    }));
+    const get = vi
+        .spyOn(apiSession.client, 'GET')
         .mockResolvedValueOnce({
             data: {
-                items: [
-                    {
-                        id: 'one',
-                        user_id: 'one',
-                        display_name: 'Morgan Lee',
-                        email: 'morgan@example.com',
-                        role: 'administrator',
-                    },
-                    {
-                        id: 'two',
-                        user_id: 'two',
-                        display_name: 'Jules Park',
-                        email: 'jules@example.com',
-                        role: 'deal_desk',
-                    },
-                    {
-                        id: 'three',
-                        user_id: 'three',
-                        display_name: 'Samira Chen',
-                        email: 'samira@example.com',
-                        role: 'operations_reviewer',
-                    },
-                ],
-                total_count: 4,
-                next_cursor: 'after-three',
+                items: firstPage,
+                total_count: 11,
+                next_cursor: 'after-ten',
             },
             response: new Response(null, { status: 200 }),
         })
@@ -46,14 +32,14 @@ test('shows active-member count and moves between cursor pages', async () => {
             data: {
                 items: [
                     {
-                        id: 'four',
-                        user_id: 'four',
+                        id: 'member-11',
+                        user_id: 'user-11',
                         display_name: 'Elena Ruiz',
                         email: 'elena@example.com',
                         role: 'auditor',
                     },
                 ],
-                total_count: 4,
+                total_count: 11,
                 next_cursor: null,
             },
             response: new Response(null, { status: 200 }),
@@ -69,13 +55,22 @@ test('shows active-member count and moves between cursor pages', async () => {
         </QueryClientProvider>,
     );
 
-    expect(await screen.findByText('4 active members')).toBeInTheDocument();
-    expect(screen.getByText('Showing 1–3 of 4 members')).toBeInTheDocument();
+    expect(await screen.findByText('11 active members')).toBeInTheDocument();
+    expect(screen.getByText('Showing 1–10 of 11 members')).toBeInTheDocument();
+    expect(get).toHaveBeenCalledWith(
+        '/api/v1/organizations/{organization_id}/memberships',
+        {
+            params: {
+                path: { organization_id: 'org-acme' },
+                query: { page_size: 10, cursor: undefined },
+            },
+        },
+    );
     expect(screen.queryByRole('button', { name: 'Invite member' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
 
     expect(await screen.findByText('Elena Ruiz')).toBeInTheDocument();
-    expect(screen.getByText('Showing 4–4 of 4 members')).toBeInTheDocument();
+    expect(screen.getByText('Showing 11–11 of 11 members')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Previous' }));
     expect(await screen.findByText('Morgan Lee')).toBeInTheDocument();
