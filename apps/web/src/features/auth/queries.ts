@@ -1,20 +1,44 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+    useMutation,
+    useQuery,
+    useQueryClient,
+    type QueryClient,
+} from '@tanstack/react-query';
 
 import { apiSession } from '../../api/session';
 import type {
     LoginInput,
+    OrganizationContext,
     Principal,
     RegistrationInput,
 } from '../../api/contracts';
 import { apiErrorFrom } from '../../api/errors';
 
 export const sessionQueryKey = ['auth', 'session'] as const;
+export const organizationsQueryKey = ['auth', 'organizations'] as const;
 
 /**
- * Reads the authenticated principal through the refresh cookie.
+ * Activates a replacement organization context and discards prior tenant data.
  *
- * @returns The session query, including pending and error states.
+ * @param queryClient - Cache containing the authenticated principal.
+ * @param principal - Principal before the context change.
+ * @param context - Context and token returned by the API.
  */
+function activateOrganizationContext(
+    queryClient: QueryClient,
+    principal: Principal,
+    context: OrganizationContext,
+): void {
+    apiSession.setAccessToken(context.token);
+    queryClient.clear();
+    queryClient.setQueryData<Principal>(sessionQueryKey, {
+        ...principal,
+        organization: context.organization,
+        membership: context.membership,
+        token: context.token,
+    });
+}
+
 export function useSession() {
     return useQuery({
         queryKey: sessionQueryKey,
@@ -24,11 +48,6 @@ export function useSession() {
     });
 }
 
-/**
- * Starts a local session from submitted credentials.
- *
- * @returns A login mutation that replaces cached identity data.
- */
 export function useLogin() {
     const queryClient = useQueryClient();
 
@@ -41,11 +60,6 @@ export function useLogin() {
     });
 }
 
-/**
- * Starts an account-only session after registration.
- *
- * @returns A registration mutation that replaces cached identity data.
- */
 export function useRegistration() {
     const queryClient = useQueryClient();
 
@@ -61,11 +75,6 @@ export function useRegistration() {
 export type OrganizationSetup =
     { kind: 'create'; name: string } | { kind: 'join'; code: string };
 
-/**
- * Creates or joins an organization for the current account.
- *
- * @returns A mutation that replaces the account-only context.
- */
 export function useOrganizationSetup() {
     const queryClient = useQueryClient();
 
@@ -93,23 +102,60 @@ export function useOrganizationSetup() {
             return { context: result.data, principal };
         },
         onSuccess: ({ context, principal }) => {
-            apiSession.setAccessToken(context.token);
-            queryClient.clear();
-            queryClient.setQueryData<Principal>(sessionQueryKey, {
-                ...principal,
-                organization: context.organization,
-                membership: context.membership,
-                token: context.token,
+            activateOrganizationContext(queryClient, principal, context);
+        },
+    });
+}
+
+export function useOrganizations() {
+    return useQuery({
+        queryKey: organizationsQueryKey,
+        queryFn: async () => {
+            const result = await apiSession.client.GET(
+                '/api/v1/users/me/organizations',
+            );
+            if (!result.data) {
+                throw apiErrorFrom(result.response, result.error);
+            }
+
+            return result.data;
+        },
+        retry: false,
+    });
+}
+
+export function useSwitchOrganization() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (organizationId: string) => {
+            const principal =
+                queryClient.getQueryData<Principal>(sessionQueryKey);
+            if (!principal) {
+                throw new Error('An account session is required.');
+            }
+
+            const result = await apiSession.client.PATCH(
+                '/api/v1/users/me/organization',
+                { body: { organization_id: organizationId } },
+            );
+            if (!result.data) {
+                throw apiErrorFrom(result.response, result.error);
+            }
+
+            return { context: result.data, principal };
+        },
+        onSuccess: ({ context, principal }) => {
+            activateOrganizationContext(queryClient, principal, context);
+        },
+        onError: () => {
+            void queryClient.invalidateQueries({
+                queryKey: organizationsQueryKey,
             });
         },
     });
 }
 
-/**
- * Revokes the browser session and clears cached server state.
- *
- * @returns A sign-out mutation.
- */
 export function useSignOut() {
     const queryClient = useQueryClient();
 

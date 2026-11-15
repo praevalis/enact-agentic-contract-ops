@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, Ref } from 'react';
 
 import { cn } from '../../utils/cn';
 
@@ -20,23 +20,21 @@ const buttonStyles = cva(
 export interface ButtonProps
     extends
         ButtonHTMLAttributes<HTMLButtonElement>,
-        VariantProps<typeof buttonStyles> {}
+        VariantProps<typeof buttonStyles> {
+    ref?: Ref<HTMLButtonElement>;
+}
 
-/**
- * Renders a native button with the design system's action variants.
- *
- * @param props - Native button attributes and visual variant.
- * @returns A keyboard-accessible button.
- */
 export function Button({
     variant,
     className,
     type = 'button',
+    ref,
     ...props
 }: ButtonProps) {
     return (
         <button
             {...props}
+            ref={ref}
             type={type}
             className={cn(buttonStyles({ variant }), className)}
         />
