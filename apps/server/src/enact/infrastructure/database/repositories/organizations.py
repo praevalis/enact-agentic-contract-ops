@@ -2,6 +2,7 @@
 
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from enact.identity.entities import Organization
@@ -32,6 +33,22 @@ class SqlAlchemyOrganizationRepository:
             The matching organization, or ``None`` when it does not exist.
         """
         model = await self._session.get(OrganizationModel, organization_id)
+        return to_organization(model) if model is not None else None
+
+    async def lock(self, organization_id: UUID) -> Organization | None:
+        """Serialize administrator changes through the organization row.
+
+        Args:
+            organization_id: Organization to lock.
+
+        Returns:
+            The locked organization, if it exists.
+        """
+        model = await self._session.scalar(
+            select(OrganizationModel)
+            .where(OrganizationModel.id == organization_id)
+            .with_for_update()
+        )
         return to_organization(model) if model is not None else None
 
     async def create(self, *, name: str) -> Organization:

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { FiChevronDown, FiHome, FiPlus } from 'react-icons/fi';
+import { FaRegBuilding } from 'react-icons/fa';
+import { FiChevronDown, FiPlus } from 'react-icons/fi';
 
 import type { OrganizationMembership } from '../../api/contracts';
 import { ApiError } from '../../api/errors';
@@ -7,15 +8,8 @@ import { Button } from '../../components/ui/Button';
 import { Dropdown } from '../../components/ui/Dropdown';
 import { InlineError } from '../../components/ui/InlineError';
 import { cn } from '../../utils/cn';
+import { roleOptions } from './membershipRoles';
 import { useOrganizations, useSwitchOrganization } from './queries';
-
-const roleLabels: Record<OrganizationMembership['membership']['role'], string> =
-    {
-        administrator: 'Administrator',
-        deal_desk: 'Deal desk',
-        operations_reviewer: 'Operations reviewer',
-        auditor: 'Auditor',
-    };
 
 interface OrganizationPickerProps {
     current: OrganizationMembership;
@@ -52,7 +46,7 @@ export function OrganizationPicker({ current }: OrganizationPickerProps) {
         >
             <div className="flex min-w-0 items-center gap-4">
                 <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-umber text-white">
-                    <FiHome className="size-6" aria-hidden="true" />
+                    <FaRegBuilding className="size-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-widest text-secondary-text">
@@ -62,7 +56,9 @@ export function OrganizationPicker({ current }: OrganizationPickerProps) {
                         {current.organization.name}
                     </strong>
                     <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-secondary-text">
-                        <span>{roleLabels[current.membership.role]}</span>
+                        <span>
+                            {roleOptions[current.membership.role].label}
+                        </span>
                         <span className="inline-flex items-center gap-1.5">
                             <span
                                 aria-hidden="true"
@@ -162,10 +158,10 @@ export function OrganizationPicker({ current }: OrganizationPickerProps) {
                                                     </strong>
                                                     <span className="block text-xs text-secondary-text">
                                                         {
-                                                            roleLabels[
+                                                            roleOptions[
                                                                 entry.membership
                                                                     .role
-                                                            ]
+                                                            ].label
                                                         }
                                                     </span>
                                                 </span>

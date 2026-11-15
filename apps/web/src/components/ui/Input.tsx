@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 import { useState } from 'react';
-import type { InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, Ref } from 'react';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 import { cn } from '../../utils/cn';
@@ -20,6 +20,7 @@ const inputStyles = cva(
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     invalid?: boolean;
+    ref?: Ref<HTMLInputElement>;
 }
 
 export function Input({
@@ -27,6 +28,7 @@ export function Input({
     className,
     type,
     disabled,
+    ref,
     ...props
 }: InputProps) {
     const [passwordVisible, setPasswordVisible] = useState(false);
@@ -36,6 +38,7 @@ export function Input({
     const input = (
         <input
             {...props}
+            ref={ref}
             type={isPassword && passwordVisible ? 'text' : type}
             disabled={disabled}
             aria-invalid={invalid || undefined}

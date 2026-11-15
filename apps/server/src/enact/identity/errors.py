@@ -191,6 +191,16 @@ class MembershipPermissionDeniedError(IdentityError):
         )
 
 
+class LastAdministratorError(IdentityError):
+    """Raised when a change would leave an organization without an administrator."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            message='Assign another administrator before changing this membership.',
+            code='last_administrator_required',
+        )
+
+
 class AuthSessionNotFoundError(IdentityError):
     """Raised when a requested authentication session does not exist."""
 

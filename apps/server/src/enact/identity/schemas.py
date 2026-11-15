@@ -86,6 +86,36 @@ class OrganizationCreate(BaseWrite):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 
 
+class OrganizationUpdate(BaseWrite):
+    """Replacement organization display name."""
+
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+
+
+class MembershipUpdate(BaseWrite):
+    """Replacement role for an active membership."""
+
+    role: MembershipRole
+
+
+class OrganizationMemberRead(BaseRead):
+    """Public identity and role of an active organization member."""
+
+    id: UUID
+    user_id: UUID
+    display_name: str
+    email: str
+    role: MembershipRole
+
+
+class OrganizationMemberListRead(BaseRead):
+    """Cursor page of active members with the total active count."""
+
+    items: list[OrganizationMemberRead]
+    total_count: int
+    next_cursor: str | None
+
+
 class OrganizationJoinCreate(BaseWrite):
     """Invitation code submitted to join an existing organization."""
 

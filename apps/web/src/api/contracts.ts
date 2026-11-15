@@ -11,3 +11,5 @@ export type OrganizationMembership =
     components['schemas']['OrganizationMembershipRead'];
 export type ValidationIssue = components['schemas']['ValidationIssueRead'];
 export type MembershipRole = components['schemas']['MembershipRole'];
+export type OrganizationMember =
+    components['schemas']['OrganizationMemberRead'];

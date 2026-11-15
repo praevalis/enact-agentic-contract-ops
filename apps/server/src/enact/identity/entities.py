@@ -28,6 +28,27 @@ class Membership:
 
 
 @dataclass(frozen=True, slots=True)
+class OrganizationMember:
+    """An active membership with the user's public identity."""
+
+    id: UUID
+    user_id: UUID
+    organization_id: UUID
+    display_name: str
+    email: str
+    role: str
+    created_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class MemberCursor:
+    """Stable position in a newest-first member list."""
+
+    id: UUID
+    created_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
 class Organization:
     """An organization available to the authenticated user."""
 

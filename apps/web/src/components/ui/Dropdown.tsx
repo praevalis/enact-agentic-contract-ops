@@ -19,6 +19,7 @@ const panelStyles = cva(
             panelWidth: {
                 trigger: 'w-full',
                 wide: 'w-full sm:w-96',
+                menu: 'w-48',
             },
         },
         defaultVariants: { panelWidth: 'trigger' },
@@ -32,6 +33,7 @@ export interface DropdownProps extends VariantProps<typeof panelStyles> {
     disabled?: boolean;
     className?: string;
     alignment?: 'auto' | 'start' | 'end';
+    triggerAppearance?: 'field' | 'icon';
 }
 
 export function Dropdown({
@@ -42,6 +44,7 @@ export function Dropdown({
     className,
     panelWidth,
     alignment = 'auto',
+    triggerAppearance = 'field',
 }: DropdownProps) {
     const [open, setOpen] = useState(false);
     const [restoreFocus, setRestoreFocus] = useState(false);
@@ -166,6 +169,7 @@ export function Dropdown({
             <Button
                 ref={triggerRef}
                 variant="secondary"
+                size={triggerAppearance === 'icon' ? 'small' : 'medium'}
                 type="button"
                 disabled={disabled}
                 aria-label={triggerLabel}
@@ -176,7 +180,15 @@ export function Dropdown({
                     setHorizontalOffset(0);
                     setOpen((wasOpen) => !wasOpen);
                 }}
-                className="w-full justify-between gap-5 bg-surface shadow-sm"
+                className={cn(
+                    'w-full',
+                    triggerAppearance === 'field'
+                        ? 'justify-between gap-5 bg-surface shadow-sm ring-[0.5px] ring-control-hover/50 hover:bg-control-hover'
+                        : cn(
+                              'min-h-10 p-0 hover:bg-control-hover',
+                              open ? 'bg-control-hover' : 'bg-transparent',
+                          ),
+                )}
             >
                 {trigger}
             </Button>

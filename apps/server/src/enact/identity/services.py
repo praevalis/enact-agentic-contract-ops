@@ -10,7 +10,7 @@ from hashlib import sha256
 from uuid import UUID, uuid4
 
 from .authentication import AccessTokenCodec, PasswordHasher, Principal
-from .entities import AuthSession, Membership, Organization, User
+from .entities import AuthSession, MemberCursor, Membership, Organization, OrganizationMember, User
 from .enums import MembershipRole, MembershipStatus
 from .errors import (
     AuthSessionInactiveError,
@@ -19,8 +19,10 @@ from .errors import (
     InvalidCredentialsError,
     InvalidInvitationCodeError,
     InvalidRefreshTokenError,
+    LastAdministratorError,
     MembershipNotFoundError,
     MembershipPermissionDeniedError,
+    MembershipTransitionError,
     OrganizationMembershipNotFoundError,
     OrganizationNotFoundError,
 )
@@ -59,6 +61,15 @@ class InvitationIssueResult:
     organization_id: UUID
     role: MembershipRole
     expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class MemberPage:
+    """One active-member page and the organization-wide count."""
+
+    items: list[OrganizationMember]
+    total_count: int
+    next_cursor: MemberCursor | None
 
 
 class AuthenticationService:
@@ -848,6 +859,84 @@ class MembershipService:
         self._uow = uow
         self._clock = clock or (lambda: datetime.now(UTC))
 
+    async def list_active(
+        self,
+        *,
+        actor_user_id: UUID,
+        organization_id: UUID,
+        page_size: int,
+        cursor: MemberCursor | None = None,
+    ) -> MemberPage:
+        """List active members for any active member of the organization.
+
+        Args:
+            actor_user_id: User viewing the organization.
+            organization_id: Organization to list.
+            page_size: Number of members to return, from 1 through 100.
+            cursor: Last position from a previous page.
+
+        Returns:
+            Active members, total count, and optional next position.
+
+        Raises:
+            MembershipPermissionDeniedError: If the actor is not an active member.
+            ValueError: If the page size is outside the supported range.
+        """
+        if not 1 <= page_size <= 100:
+            raise ValueError('Page size must be between 1 and 100.')
+
+        async with self._uow:
+            await self._uow.set_organization_context(organization_id)
+            actor = await self._uow.memberships.get_for_user_and_organization(
+                actor_user_id, organization_id
+            )
+            if actor is None or actor.status != MembershipStatus.ACTIVE:
+                raise MembershipPermissionDeniedError(organization_id)
+
+            rows = await self._uow.memberships.list_active_for_organization(
+                organization_id, limit=page_size + 1, cursor=cursor
+            )
+            total_count = await self._uow.memberships.count_active_for_organization(organization_id)
+            items = list(rows[:page_size])
+            next_cursor = (
+                MemberCursor(id=items[-1].id, created_at=items[-1].created_at)
+                if len(rows) > page_size
+                else None
+            )
+            return MemberPage(items=items, total_count=total_count, next_cursor=next_cursor)
+
+    async def change_role(
+        self,
+        *,
+        actor_user_id: UUID,
+        organization_id: UUID,
+        membership_id: UUID,
+        role: MembershipRole,
+    ) -> Membership:
+        """Assign a new role to an active member.
+
+        Args:
+            actor_user_id: Administrator performing the change.
+            organization_id: Organization containing the membership.
+            membership_id: Membership to update.
+            role: New role.
+
+        Returns:
+            Updated membership.
+
+        Raises:
+            MembershipPermissionDeniedError: If the actor is not an active administrator.
+            MembershipNotFoundError: If the target is outside the organization or absent.
+            LastAdministratorError: If the change would remove the last administrator.
+        """
+        return await self._change(
+            actor_user_id=actor_user_id,
+            organization_id=organization_id,
+            membership_id=membership_id,
+            action='change_role',
+            role=role,
+        )
+
     async def suspend(
         self, *, actor_user_id: UUID, organization_id: UUID, membership_id: UUID
     ) -> Membership:
@@ -865,6 +954,7 @@ class MembershipService:
             MembershipPermissionDeniedError: If the actor is not an active administrator.
             MembershipNotFoundError: If the membership is outside the organization or absent.
             MembershipTransitionError: If the membership is not active.
+            LastAdministratorError: If this would suspend the last active administrator.
         """
         return await self._change(
             actor_user_id=actor_user_id,
@@ -915,6 +1005,7 @@ class MembershipService:
             MembershipPermissionDeniedError: If the actor is not an active administrator.
             MembershipNotFoundError: If the membership is outside the organization or absent.
             MembershipTransitionError: If the membership is already revoked.
+            LastAdministratorError: If this would remove the last active administrator.
         """
         return await self._change(
             actor_user_id=actor_user_id,
@@ -967,6 +1058,9 @@ class MembershipService:
         """Authorize and atomically persist one membership transition and its audit event."""
         async with self._uow:
             await self._uow.set_organization_context(organization_id)
+            if action in {'change_role', 'revoke', 'suspend'}:
+                await self._uow.organizations.lock(organization_id)
+
             actor = await self._uow.memberships.get_for_user_and_organization(
                 actor_user_id, organization_id
             )
@@ -983,6 +1077,23 @@ class MembershipService:
             if target is None or target.organization_id != organization_id:
                 raise MembershipNotFoundError(membership_id)
 
+            if (
+                target.role == MembershipRole.ADMINISTRATOR
+                and target.status == MembershipStatus.ACTIVE
+                and (
+                    action in {'revoke', 'suspend'}
+                    or (action == 'change_role' and role != MembershipRole.ADMINISTRATOR)
+                )
+                and await self._uow.memberships.count_active_administrators(organization_id) <= 1
+            ):
+                raise LastAdministratorError()
+
+            if action == 'change_role' and target.status != MembershipStatus.ACTIVE:
+                raise MembershipTransitionError(membership_id, action)
+
+            if action == 'change_role' and role == target.role:
+                return target
+
             match action:
                 case 'suspend':
                     changed = await self._uow.memberships.suspend(membership_id)
@@ -992,6 +1103,8 @@ class MembershipService:
                     changed = await self._uow.memberships.revoke(membership_id)
                 case 'regrant' if role is not None:
                     changed = await self._uow.memberships.regrant(membership_id, role.value)
+                case 'change_role' if role is not None:
+                    changed = await self._uow.memberships.change_role(membership_id, role.value)
                 case _:
                     raise ValueError(f'Unsupported membership action: {action}.')
 
@@ -1014,3 +1127,61 @@ class MembershipService:
             )
 
             return changed
+
+
+class OrganizationManagementService:
+    """Apply administrator changes to an organization's profile."""
+
+    def __init__(
+        self, *, uow: IdentityUnitOfWork, clock: Callable[[], datetime] | None = None
+    ) -> None:
+        self._uow = uow
+        self._clock = clock or (lambda: datetime.now(UTC))
+
+    async def rename(
+        self, *, actor_user_id: UUID, organization_id: UUID, name: str
+    ) -> Organization:
+        """Rename an active organization and record the change.
+
+        Args:
+            actor_user_id: Administrator performing the rename.
+            organization_id: Organization to rename.
+            name: Validated new name.
+
+        Returns:
+            Updated organization.
+
+        Raises:
+            MembershipPermissionDeniedError: If the actor is not an active administrator.
+            OrganizationNotFoundError: If the organization is unavailable.
+        """
+        async with self._uow:
+            await self._uow.set_organization_context(organization_id)
+            actor = await self._uow.memberships.get_for_user_and_organization(
+                actor_user_id, organization_id
+            )
+            if (
+                actor is None
+                or actor.status != MembershipStatus.ACTIVE
+                or actor.role != MembershipRole.ADMINISTRATOR
+            ):
+                raise MembershipPermissionDeniedError(organization_id)
+
+            organization = await self._uow.organizations.get(organization_id)
+            if organization is None or organization.status != 'active':
+                raise OrganizationNotFoundError(organization_id)
+
+            if organization.name == name:
+                return organization
+
+            updated = await self._uow.organizations.update_profile(organization_id, name=name)
+            await self._uow.audit_events.create(
+                organization_id=organization_id,
+                actor_user_id=actor_user_id,
+                action='organization.rename',
+                resource_type='organization',
+                resource_id=organization_id,
+                occurred_at=self._clock(),
+                details={'previous_name': organization.name, 'name': updated.name},
+            )
+            return updated

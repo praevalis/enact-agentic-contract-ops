@@ -42,10 +42,12 @@ afterEach(() => {
 });
 
 test('offers code issuance only in an administrator organization', async () => {
-    vi.spyOn(apiSession.client, 'GET').mockResolvedValue({
-        data: [],
+    vi.spyOn(apiSession.client, 'GET').mockImplementation(async (path) => ({
+        data: String(path).includes('memberships')
+            ? { items: [], total_count: 0, next_cursor: null }
+            : [],
         response: new Response(null, { status: 200 }),
-    });
+    }));
     const queryClient = new QueryClient();
     queryClient.setQueryData<Principal>(sessionQueryKey, {
         ...administrator,
@@ -66,9 +68,7 @@ test('offers code issuance only in an administrator organization', async () => {
 
     expect(screen.queryByRole('button', { name: 'Invite member' })).toBeNull();
     expect(screen.queryByText('Signed in as')).toBeNull();
-    expect(
-        screen.getByRole('button', { name: 'Sign out' }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sign out' })).toBeNull();
 
     act(() => queryClient.setQueryData(sessionQueryKey, administrator));
     expect(
@@ -77,10 +77,12 @@ test('offers code issuance only in an administrator organization', async () => {
 });
 
 test('clears an issued code when the active organization changes', async () => {
-    vi.spyOn(apiSession.client, 'GET').mockResolvedValue({
-        data: [],
+    vi.spyOn(apiSession.client, 'GET').mockImplementation(async (path) => ({
+        data: String(path).includes('memberships')
+            ? { items: [], total_count: 0, next_cursor: null }
+            : [],
         response: new Response(null, { status: 200 }),
-    });
+    }));
     vi.spyOn(apiSession.client, 'POST').mockResolvedValue({
         data: {
             code: 'ACME7K2M',

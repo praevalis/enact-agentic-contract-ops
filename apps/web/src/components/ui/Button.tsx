@@ -9,9 +9,10 @@ const buttonStyles = cva(
         variants: {
             variant: {
                 primary: 'bg-amber text-night hover:bg-amber/90',
+                danger: 'bg-status-danger text-white hover:bg-status-danger/90',
                 secondary: 'bg-inset text-primary-text hover:bg-control-hover',
-                raised: 'bg-surface text-primary-text shadow-sm ring-1 ring-control-hover hover:bg-control-hover',
-                quiet: 'bg-transparent text-primary-text underline underline-offset-4 hover:bg-inset',
+                raised: 'bg-surface text-primary-text shadow-sm ring-[0.5px] ring-control-hover/50 hover:bg-control-hover',
+                quiet: 'bg-transparent text-primary-text hover:bg-inset',
             },
             size: {
                 small: 'min-h-9 px-3 py-1.5 text-xs',

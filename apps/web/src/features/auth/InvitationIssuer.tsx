@@ -8,47 +8,12 @@ import { Dropdown } from '../../components/ui/Dropdown';
 import { FormError } from '../../components/ui/FormError';
 import { InlineError } from '../../components/ui/InlineError';
 import { cn } from '../../utils/cn';
+import { roleOptions, roleOrder } from './membershipRoles';
 import { useIssueInvitation } from './queries';
 
 interface InvitationIssuerProps {
     organizationId: string;
 }
-
-interface RoleOption {
-    label: string;
-    description: string;
-    dotClass: string;
-}
-
-const roleOrder: readonly MembershipRole[] = [
-    'administrator',
-    'deal_desk',
-    'operations_reviewer',
-    'auditor',
-];
-
-const roleOptions: Record<MembershipRole, RoleOption> = {
-    administrator: {
-        label: 'Administrator',
-        description: 'Manage organization and access',
-        dotClass: 'bg-status-processing',
-    },
-    deal_desk: {
-        label: 'Deal desk',
-        description: 'Work with contract cases',
-        dotClass: 'bg-status-success',
-    },
-    operations_reviewer: {
-        label: 'Operations reviewer',
-        description: 'Review operational decisions',
-        dotClass: 'bg-status-review',
-    },
-    auditor: {
-        label: 'Auditor',
-        description: 'Inspect evidence and results',
-        dotClass: 'bg-secondary-text',
-    },
-};
 
 export function InvitationIssuer({ organizationId }: InvitationIssuerProps) {
     const [open, setOpen] = useState(false);
@@ -129,9 +94,9 @@ export function InvitationIssuer({ organizationId }: InvitationIssuerProps) {
                 )}
             </div>
             {open && (
-                <div className="rounded-lg bg-inset p-5 sm:p-6">
+                <div className="mb-6 rounded-lg bg-surface p-5 sm:p-6">
                     <div className="mb-5 flex items-start gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-surface">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-umber text-white">
                             <FiPlus className="size-5" aria-hidden="true" />
                         </span>
                         <div>
@@ -211,10 +176,10 @@ export function InvitationIssuer({ organizationId }: InvitationIssuerProps) {
                     ) : (
                         <form
                             onSubmit={createCode}
-                            className="flex flex-col gap-5"
+                            className="flex flex-wrap items-end justify-between gap-3 sm:gap-4"
                         >
-                            <div>
-                                <p className="mb-1.5 text-sm font-medium">
+                            <div className="w-full sm:w-80">
+                                <p className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-secondary-text">
                                     Role for new member
                                 </p>
                                 <Dropdown
@@ -229,7 +194,7 @@ export function InvitationIssuer({ organizationId }: InvitationIssuerProps) {
                                         </>
                                     }
                                     disabled={issue.isPending}
-                                    className="sm:w-72"
+                                    className="w-full"
                                 >
                                     {(close) => (
                                         <ul className="flex flex-col gap-1">
@@ -291,28 +256,35 @@ export function InvitationIssuer({ organizationId }: InvitationIssuerProps) {
                                 </Dropdown>
                             </div>
                             {issue.isError && (
-                                <FormError>
-                                    {permissionDenied
-                                        ? 'You no longer have permission to invite members to this organization.'
-                                        : organizationUnavailable
-                                          ? 'This organization is no longer available.'
-                                          : 'Could not create an invitation code. Try again.'}
-                                </FormError>
+                                <div className="order-last w-full">
+                                    <FormError>
+                                        {permissionDenied
+                                            ? 'You no longer have permission to invite members to this organization.'
+                                            : organizationUnavailable
+                                              ? 'This organization is no longer available.'
+                                              : 'Could not create an invitation code. Try again.'}
+                                    </FormError>
+                                </div>
                             )}
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex w-full gap-2 sm:w-56 sm:shrink-0 sm:gap-3">
                                 <Button
                                     variant="primary"
+                                    size="small"
                                     type="submit"
                                     disabled={issue.isPending}
+                                    className="min-w-0 flex-1"
                                 >
                                     {issue.isPending
                                         ? 'Creating code…'
                                         : 'Create code'}
                                 </Button>
                                 <Button
+                                    variant="raised"
+                                    size="small"
                                     type="button"
                                     onClick={closeEditor}
                                     disabled={issue.isPending}
+                                    className="min-w-0 flex-1"
                                 >
                                     Cancel
                                 </Button>

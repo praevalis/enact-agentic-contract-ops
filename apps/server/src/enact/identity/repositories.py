@@ -7,9 +7,11 @@ from uuid import UUID
 
 from .entities import (
     AuthSession,
+    MemberCursor,
     Membership,
     Organization,
     OrganizationInvitation,
+    OrganizationMember,
     User,
     UserOrganizationPreference,
 )
@@ -89,6 +91,43 @@ class UserRepository(Protocol):
 
 class MembershipRepository(Protocol):
     """Persist and resolve organization memberships."""
+
+    async def list_active_for_organization(
+        self, organization_id: UUID, *, limit: int, cursor: MemberCursor | None
+    ) -> Sequence[OrganizationMember]:
+        """List active members with public user details under tenant scope.
+
+        Args:
+            organization_id: Organization to list.
+            limit: Maximum rows to fetch.
+            cursor: Last position from the previous page.
+
+        Returns:
+            Active members in newest-first order.
+        """
+        ...
+
+    async def count_active_for_organization(self, organization_id: UUID) -> int:
+        """Count active members in the selected organization.
+
+        Args:
+            organization_id: Organization to count.
+
+        Returns:
+            Number of active memberships.
+        """
+        ...
+
+    async def count_active_administrators(self, organization_id: UUID) -> int:
+        """Count active administrators under tenant scope.
+
+        Args:
+            organization_id: Organization to count.
+
+        Returns:
+            Number of active administrator memberships.
+        """
+        ...
 
     async def get(self, membership_id: UUID) -> Membership | None:
         """Return one membership by identifier.
@@ -207,6 +246,17 @@ class MembershipRepository(Protocol):
 
 class OrganizationRepository(Protocol):
     """Persist and retrieve organizations."""
+
+    async def lock(self, organization_id: UUID) -> Organization | None:
+        """Lock an organization row for a membership management transaction.
+
+        Args:
+            organization_id: Organization to lock.
+
+        Returns:
+            The locked organization, if it exists.
+        """
+        ...
 
     async def get(self, organization_id: UUID) -> Organization | None:
         """Return one organization by identifier.

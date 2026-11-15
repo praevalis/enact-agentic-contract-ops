@@ -17,7 +17,10 @@ from enact.identity.errors import (
     InvalidCredentialsError,
     InvalidInvitationCodeError,
     InvalidRefreshTokenError,
+    LastAdministratorError,
     MembershipAlreadyExistsError,
+    MembershipNotFoundError,
+    MembershipTransitionError,
     OrganizationNotFoundError,
     UserEmailAlreadyExistsError,
     UserNotFoundError,
@@ -54,9 +57,19 @@ def register_error_handlers(app: FastAPI) -> None:
             ),
         ):
             response_status = 401
-        elif isinstance(error, (MembershipAlreadyExistsError, UserEmailAlreadyExistsError)):
+        elif isinstance(
+            error,
+            (
+                MembershipAlreadyExistsError,
+                UserEmailAlreadyExistsError,
+                LastAdministratorError,
+                MembershipTransitionError,
+            ),
+        ):
             response_status = 409
-        elif isinstance(error, (OrganizationNotFoundError, UserNotFoundError)):
+        elif isinstance(
+            error, (OrganizationNotFoundError, UserNotFoundError, MembershipNotFoundError)
+        ):
             response_status = 404
         elif isinstance(error, InvalidInvitationCodeError):
             response_status = 400

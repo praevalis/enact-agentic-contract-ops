@@ -3,10 +3,10 @@
 from collections.abc import Sequence
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from enact.identity.entities import Membership
+from enact.identity.entities import MemberCursor, Membership, OrganizationMember
 from enact.identity.errors import (
     MembershipAlreadyExistsError,
     MembershipNotFoundError,
@@ -14,6 +14,7 @@ from enact.identity.errors import (
 )
 
 from ..models.identity import Membership as MembershipModel
+from ..models.identity import User as UserModel
 from ..session.flush import flush_session
 
 _CONSTRAINT_ERRORS = {'uq_membership_organization_user': MembershipAlreadyExistsError}
@@ -29,6 +30,87 @@ class SqlAlchemyMembershipRepository:
             session: Session used for queries and mutations.
         """
         self._session = session
+
+    async def list_active_for_organization(
+        self, organization_id: UUID, *, limit: int, cursor: MemberCursor | None
+    ) -> Sequence[OrganizationMember]:
+        """List active members and their public user details in stable order.
+
+        Args:
+            organization_id: Organization to list.
+            limit: Maximum rows to fetch.
+            cursor: Last position from the previous page.
+
+        Returns:
+            Active members in newest-first order.
+        """
+        statement = (
+            select(MembershipModel, UserModel.display_name, UserModel.email)
+            .join(UserModel, UserModel.id == MembershipModel.user_id)
+            .where(
+                MembershipModel.organization_id == organization_id,
+                MembershipModel.status == 'active',
+            )
+            .order_by(MembershipModel.created_at.desc(), MembershipModel.id.desc())
+            .limit(limit)
+        )
+        if cursor is not None:
+            statement = statement.where(
+                or_(
+                    MembershipModel.created_at < cursor.created_at,
+                    (MembershipModel.created_at == cursor.created_at)
+                    & (MembershipModel.id < cursor.id),
+                )
+            )
+
+        rows = (await self._session.execute(statement)).all()
+        return [
+            OrganizationMember(
+                id=membership.id,
+                user_id=membership.user_id,
+                organization_id=membership.organization_id,
+                display_name=display_name,
+                email=email,
+                role=membership.role,
+                created_at=membership.created_at,
+            )
+            for membership, display_name, email in rows
+        ]
+
+    async def count_active_for_organization(self, organization_id: UUID) -> int:
+        """Count active memberships in the selected organization.
+
+        Args:
+            organization_id: Organization to count.
+
+        Returns:
+            Active membership count.
+        """
+        count = await self._session.scalar(
+            select(func.count(MembershipModel.id)).where(
+                MembershipModel.organization_id == organization_id,
+                MembershipModel.status == 'active',
+            )
+        )
+        return count or 0
+
+    async def count_active_administrators(self, organization_id: UUID) -> int:
+        """Count active administrators in the selected organization.
+
+        Args:
+            organization_id: Organization to count.
+
+        Returns:
+            Active administrator count.
+        """
+        count = await self._session.scalar(
+            select(func.count(MembershipModel.id)).where(
+                MembershipModel.organization_id == organization_id,
+                MembershipModel.status == 'active',
+                MembershipModel.role == 'administrator',
+            )
+        )
+        return count or 0
 
     async def get(self, membership_id: UUID) -> Membership | None:
         """Return one membership by identifier.

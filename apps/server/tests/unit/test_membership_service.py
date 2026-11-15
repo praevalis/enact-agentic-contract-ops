@@ -7,9 +7,10 @@ from typing import cast
 from uuid import UUID, uuid4
 
 import pytest
-from enact.identity.entities import Membership
+from enact.identity.entities import MemberCursor, Membership, OrganizationMember
 from enact.identity.enums import MembershipRole
 from enact.identity.errors import (
+    LastAdministratorError,
     MembershipNotFoundError,
     MembershipPermissionDeniedError,
     MembershipTransitionError,
@@ -26,6 +27,50 @@ class _Memberships:
 
     async def get(self, membership_id: UUID) -> Membership | None:
         return self.items.get(membership_id)
+
+    async def count_active_administrators(self, organization_id: UUID) -> int:
+        return sum(
+            membership.organization_id == organization_id
+            and membership.status == 'active'
+            and membership.role == MembershipRole.ADMINISTRATOR
+            for membership in self.items.values()
+        )
+
+    async def count_active_for_organization(self, organization_id: UUID) -> int:
+        return sum(
+            membership.organization_id == organization_id and membership.status == 'active'
+            for membership in self.items.values()
+        )
+
+    async def list_active_for_organization(
+        self, organization_id: UUID, *, limit: int, cursor: MemberCursor | None
+    ) -> list[OrganizationMember]:
+        rows = [
+            OrganizationMember(
+                id=membership.id,
+                user_id=membership.user_id,
+                organization_id=membership.organization_id,
+                display_name=str(membership.user_id),
+                email=f'{membership.user_id}@example.com',
+                role=membership.role,
+                created_at=datetime(2026, 10, 25, tzinfo=UTC),
+            )
+            for membership in self.items.values()
+            if membership.organization_id == organization_id and membership.status == 'active'
+        ]
+        rows.sort(key=lambda member: (member.created_at, member.id), reverse=True)
+        if cursor is not None:
+            rows = [
+                member
+                for member in rows
+                if (member.created_at, member.id) < (cursor.created_at, cursor.id)
+            ]
+        return rows[:limit]
+
+    async def change_role(self, membership_id: UUID, role: str) -> Membership:
+        membership = replace(self.items[membership_id], role=role)
+        self.items[membership_id] = membership
+        return membership
 
     async def get_for_user_and_organization(
         self, user_id: UUID, organization_id: UUID
@@ -78,6 +123,16 @@ class _Sessions:
         self.revocations.append((user_id, organization_id, revoked_at))
 
 
+class _Organizations:
+    """Record serialized organization membership changes."""
+
+    def __init__(self) -> None:
+        self.locked: list[UUID] = []
+
+    async def lock(self, organization_id: UUID) -> None:
+        self.locked.append(organization_id)
+
+
 class _AuditEvents:
     """Capture immutable audit event writes."""
 
@@ -106,6 +161,7 @@ class _UnitOfWork:
 
     def __init__(self, memberships: _Memberships) -> None:
         self.memberships = memberships
+        self.organizations = _Organizations()
         self.sessions = _Sessions()
         self.audit_events = _AuditEvents()
         self.commit_count = 0
@@ -238,3 +294,87 @@ class TestMembershipService:
         assert uow.sessions.revocations == []
         assert uow.audit_events.actions == []
         assert uow.rollback_count == 1
+
+    async def test_last_administrator_cannot_be_removed_or_demoted(self) -> None:
+        """Keep one active administrator when managing roles and access."""
+        service, uow, actor, _, _ = _fixture()
+
+        with pytest.raises(LastAdministratorError):
+            await service.change_role(
+                actor_user_id=actor.user_id,
+                organization_id=actor.organization_id,
+                membership_id=actor.id,
+                role=MembershipRole.AUDITOR,
+            )
+
+        with pytest.raises(LastAdministratorError):
+            await service.revoke(
+                actor_user_id=actor.user_id,
+                organization_id=actor.organization_id,
+                membership_id=actor.id,
+            )
+
+        assert uow.memberships.items[actor.id] == actor
+        assert uow.sessions.revocations == []
+        assert uow.audit_events.actions == []
+
+    async def test_role_change_is_audited_and_allows_a_second_administrator(self) -> None:
+        """Allow administrator transfer before the former administrator steps down."""
+        service, uow, actor, target, _ = _fixture()
+
+        promoted = await service.change_role(
+            actor_user_id=actor.user_id,
+            organization_id=actor.organization_id,
+            membership_id=target.id,
+            role=MembershipRole.ADMINISTRATOR,
+        )
+        demoted = await service.change_role(
+            actor_user_id=actor.user_id,
+            organization_id=actor.organization_id,
+            membership_id=actor.id,
+            role=MembershipRole.DEAL_DESK,
+        )
+
+        assert promoted.role == MembershipRole.ADMINISTRATOR
+        assert demoted.role == MembershipRole.DEAL_DESK
+        assert [event[2] for event in uow.audit_events.actions] == [
+            'membership.change_role',
+            'membership.change_role',
+        ]
+        assert uow.sessions.revocations == []
+
+    async def test_member_list_is_cursor_paginated_and_tenant_scoped(self) -> None:
+        """Expose only active members of the actor's organization."""
+        service, uow, actor, target, _ = _fixture(actor_role=MembershipRole.AUDITOR)
+        other = Membership(uuid4(), uuid4(), uuid4(), MembershipRole.AUDITOR, 'active')
+        uow.memberships.items[other.id] = other
+
+        first = await service.list_active(
+            actor_user_id=actor.user_id,
+            organization_id=actor.organization_id,
+            page_size=1,
+        )
+        second = await service.list_active(
+            actor_user_id=actor.user_id,
+            organization_id=actor.organization_id,
+            page_size=1,
+            cursor=first.next_cursor,
+        )
+
+        assert first.total_count == 2
+        assert second.total_count == 2
+        assert {first.items[0].id, second.items[0].id} == {actor.id, target.id}
+        assert first.next_cursor is not None
+        assert second.next_cursor is None
+        assert other.id not in {first.items[0].id, second.items[0].id}
+
+    async def test_member_list_requires_active_membership(self) -> None:
+        """Reject a user without access before querying member details."""
+        service, _, actor, _, _ = _fixture()
+
+        with pytest.raises(MembershipPermissionDeniedError):
+            await service.list_active(
+                actor_user_id=uuid4(),
+                organization_id=actor.organization_id,
+                page_size=3,
+            )

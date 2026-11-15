@@ -344,6 +344,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizations/{organization_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Rename Organization
+         * @description Rename the active organization as an administrator.
+         *
+         *     Args:
+         *         organization_id: Organization to rename.
+         *         payload: Replacement display name.
+         *         principal: Validated organization principal.
+         *         management: Organization profile workflow.
+         *
+         *     Returns:
+         *         Updated organization.
+         */
+        patch: operations["rename_organization_api_v1_organizations__organization_id__patch"];
+        trace?: never;
+    };
     "/api/v1/organizations/{organization_id}/invitations": {
         parameters: {
             query?: never;
@@ -371,6 +400,79 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/memberships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Memberships
+         * @description List a cursor page of active members in the selected organization.
+         *
+         *     Args:
+         *         organization_id: Organization to list.
+         *         principal: Validated organization principal.
+         *         memberships: Membership workflow.
+         *         page_size: Maximum members to return.
+         *         cursor: Opaque position after the previous page.
+         *
+         *     Returns:
+         *         Active members, total count, and next cursor.
+         *
+         *     Raises:
+         *         HTTPException: If the supplied cursor is invalid.
+         */
+        get: operations["list_memberships_api_v1_organizations__organization_id__memberships_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/memberships/{membership_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Membership
+         * @description Revoke one member's access as an administrator.
+         *
+         *     Args:
+         *         organization_id: Organization containing the membership.
+         *         membership_id: Membership to revoke.
+         *         principal: Validated organization principal.
+         *         memberships: Membership workflow.
+         */
+        delete: operations["remove_membership_api_v1_organizations__organization_id__memberships__membership_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Change Membership Role
+         * @description Change one active member's role as an administrator.
+         *
+         *     Args:
+         *         organization_id: Organization containing the membership.
+         *         membership_id: Membership to update.
+         *         payload: Replacement role.
+         *         principal: Validated organization principal.
+         *         memberships: Membership workflow.
+         *
+         *     Returns:
+         *         Updated membership.
+         */
+        patch: operations["change_membership_role_api_v1_organizations__organization_id__memberships__membership_id__patch"];
         trace?: never;
     };
     "/api/v1/users/me": {
@@ -633,6 +735,13 @@ export interface components {
          */
         MembershipStatus: "active" | "suspended" | "revoked";
         /**
+         * MembershipUpdate
+         * @description Replacement role for an active membership.
+         */
+        MembershipUpdate: {
+            role: components["schemas"]["MembershipRole"];
+        };
+        /**
          * OrganizationContextRead
          * @description Active context after organization creation, joining, or switching.
          */
@@ -684,6 +793,39 @@ export interface components {
             code: string;
         };
         /**
+         * OrganizationMemberListRead
+         * @description Cursor page of active members with the total active count.
+         */
+        OrganizationMemberListRead: {
+            /** Items */
+            items: components["schemas"]["OrganizationMemberRead"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+            /** Total Count */
+            total_count: number;
+        };
+        /**
+         * OrganizationMemberRead
+         * @description Public identity and role of an active organization member.
+         */
+        OrganizationMemberRead: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            role: components["schemas"]["MembershipRole"];
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
+        /**
          * OrganizationMembershipRead
          * @description An organization available for account context switching.
          */
@@ -716,6 +858,14 @@ export interface components {
              * Format: uuid
              */
             organization_id: string;
+        };
+        /**
+         * OrganizationUpdate
+         * @description Replacement organization display name.
+         */
+        OrganizationUpdate: {
+            /** Name */
+            name: string;
         };
         /**
          * PrincipalRead
@@ -1236,6 +1386,41 @@ export interface operations {
             };
         };
     };
+    rename_organization_api_v1_organizations__organization_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationRead"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
+                };
+            };
+        };
+    };
     create_invitation_api_v1_organizations__organization_id__invitations_post: {
         parameters: {
             query?: never;
@@ -1258,6 +1443,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrganizationInvitationRead"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
+                };
+            };
+        };
+    };
+    list_memberships_api_v1_organizations__organization_id__memberships_get: {
+        parameters: {
+            query?: {
+                page_size?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationMemberListRead"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
+                };
+            };
+        };
+    };
+    remove_membership_api_v1_organizations__organization_id__memberships__membership_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+                membership_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorRead"];
+                };
+            };
+        };
+    };
+    change_membership_role_api_v1_organizations__organization_id__memberships__membership_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+                membership_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MembershipUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MembershipRead"];
                 };
             };
             /** @description Unprocessable Content */

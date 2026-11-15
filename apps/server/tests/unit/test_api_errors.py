@@ -7,7 +7,12 @@ from enact.api.errors import register_error_handlers
 from enact.api.v1 import router as v1_router
 from enact.cases.errors import CaseNotFoundError, CasePermissionDeniedError, PriorCaseNotFoundError
 from enact.customers.errors import CustomerNotFoundError, CustomerPermissionDeniedError
-from enact.identity.errors import InvalidAccessTokenError
+from enact.identity.errors import (
+    InvalidAccessTokenError,
+    LastAdministratorError,
+    MembershipNotFoundError,
+    MembershipTransitionError,
+)
 from enact.platform.errors import EnactError
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -22,6 +27,9 @@ class TestErrorHandlers:
         ('error', 'expected_status'),
         [
             (InvalidAccessTokenError(), 401),
+            (LastAdministratorError(), 409),
+            (MembershipNotFoundError(uuid4()), 404),
+            (MembershipTransitionError(uuid4(), 'changed'), 409),
             (CasePermissionDeniedError(), 403),
             (CaseNotFoundError(uuid4()), 404),
             (PriorCaseNotFoundError(), 404),

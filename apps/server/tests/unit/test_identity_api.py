@@ -59,4 +59,6 @@ class TestIdentityApi:
         assert '/api/v1/organizations' in paths
         assert '/api/v1/organizations/join' in paths
         assert '/api/v1/organizations/{organization_id}/invitations' in paths
+        assert '/api/v1/organizations/{organization_id}/memberships' in paths
+        assert '/api/v1/organizations/{organization_id}/memberships/{membership_id}' in paths
         assert '/api/v1/users/me/organization' in paths

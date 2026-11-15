@@ -49,6 +49,8 @@ These colors indicate operational meaning, not brand identity. Always pair statu
 
 Membership role selectors are a narrow exception to the operational use of these hues. Pair each role's small decorative dot with its visible role name and use a separate checkmark for selection. Use Steel blue for Administrator, Green for Deal desk, Muted violet for Operations reviewer, and the mode's secondary neutral text color for Auditor. Do not use Amber or Umber for role dots. Role descriptions use at least the 12 px supporting-text size.
 
+Member list rows use a filled neutral surface. Role badges use the reference mockup's Umber, Amber, Steel, and Graphite tints with role-colored text in both modes. The badge label carries the meaning without a dot.
+
 ## Mode assignments
 
 | Role | Light mode | Dark mode |

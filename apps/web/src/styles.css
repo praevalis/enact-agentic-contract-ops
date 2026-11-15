@@ -31,6 +31,7 @@
     --color-secondary-text: var(--role-secondary-text);
     --color-focus: var(--role-focus);
     --color-control-hover: var(--role-control-hover);
+    --color-member-row: var(--role-member-row);
 }
 
 @layer base {
@@ -43,6 +44,7 @@
         --role-secondary-text: var(--color-graphite);
         --role-focus: var(--color-graphite);
         --role-control-hover: var(--color-line);
+        --role-member-row: var(--color-line);
 
         color: var(--role-primary-text);
         background: var(--role-canvas);
@@ -61,6 +63,7 @@
             --role-secondary-text: var(--color-steel);
             --role-focus: var(--color-steel);
             --role-control-hover: var(--color-edge);
+            --role-member-row: var(--color-raised);
         }
     }
 
@@ -73,11 +76,68 @@
         --role-secondary-text: var(--color-steel);
         --role-focus: var(--color-steel);
         --role-control-hover: var(--color-edge);
+        --role-member-row: var(--color-raised);
     }
 
     body {
         min-width: 320px;
         min-height: 100vh;
         margin: 0;
+    }
+}
+
+@layer components {
+    .role-badge-administrator {
+        background: #7b685133;
+        color: #7b6851;
+    }
+
+    .role-badge-deal-desk {
+        background: #c9a75d55;
+        color: #171d20;
+    }
+
+    .role-badge-operations-reviewer {
+        background: #aeb9b577;
+        color: #334044;
+    }
+
+    .role-badge-auditor {
+        background: #48565a33;
+        color: #334044;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) .role-badge-administrator {
+            color: #e8d7bb;
+        }
+
+        :root:not([data-theme='light']) .role-badge-deal-desk {
+            color: #f4ddaa;
+        }
+
+        :root:not([data-theme='light']) .role-badge-operations-reviewer {
+            color: #dfe7e3;
+        }
+
+        :root:not([data-theme='light']) .role-badge-auditor {
+            color: #d3ded9;
+        }
+    }
+
+    :root[data-theme='dark'] .role-badge-administrator {
+        color: #e8d7bb;
+    }
+
+    :root[data-theme='dark'] .role-badge-deal-desk {
+        color: #f4ddaa;
+    }
+
+    :root[data-theme='dark'] .role-badge-operations-reviewer {
+        color: #dfe7e3;
+    }
+
+    :root[data-theme='dark'] .role-badge-auditor {
+        color: #d3ded9;
     }
 }
